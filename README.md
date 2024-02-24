@@ -12,7 +12,7 @@ Inside their dashboard (dashboard.php) the authors can then create new categorie
 
 The blog article may or may not contain an image. If an image is included, the author can determine which side of the article it is displayed on. 
 
-The blog articles are saved in a database. 
+The blog articles are saved in a mySQL database. 
 
 The option to edit or delete blog articles is, for now, not intended to be included in this project.
 
