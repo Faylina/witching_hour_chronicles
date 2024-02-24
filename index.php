@@ -27,6 +27,35 @@
 		<link rel="stylesheet" href="./css/debug.css">
     </head>
     <body>
-    
+
+    <!-- ------------- LOGIN FORM BEGIN --------------------------- -->
+        <div class="navigation">
+           
+        </div>
+    <!-- ------------- LOGIN FORM END ----------------------------- -->
+
+
+    <!-- ------------- HEADER BEGIN ------------------------------- -->
+        <header>
+            <img class="logo" src="./css/images/logo.png" alt="Parchment paper with a teal quill, a full moon in the background">
+            <h1>Witching Hour Chronicles</h1>
+
+        </header>
+    <!-- ------------- HEADER END ---------------------------------- -->
+
+
+    <!-- ------------- BLOG BEGIN ---------------------------------- -->
+        <div class="blog">
+
+        </div>
+    <!-- ------------- BLOG END ------------------------------------ -->
+
+
+    <!-- ------------- FOOTER BEGIN -------------------------------- -->
+        <footer>
+
+        </footer>
+    <!-- ------------- FOOTER END ---------------------------------- -->
+
     </body>
 </html>
