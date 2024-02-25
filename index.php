@@ -17,9 +17,49 @@
 				#********* INITIALIZE VARIABLES *********#
 				#****************************************#
 
-                $loggedIn = false;
-
+                $loggedIn   = false;
                 $errorLogin = NULL; 
+
+#*************************************************************************#
+
+				
+				#****************************************#
+				#********** SECURE PAGE ACCESS **********#
+				#****************************************#
+
+                #************ PREPARE SESSION ***********#
+
+                session_name('wwwwitchinghourchroniclescom');
+
+
+                #************ START / CONTINUE SESSION ***********#
+
+                session_start();
+
+if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$arrayName <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	    print_r($array);					
+if(DEBUG_A)	    echo "</pre>";
+
+                #****************************************#
+				#******** CHECK FOR VALID LOGIN *********#
+				#****************************************#
+
+                if( isset($_SESSION['ID']) === false OR $_SESSION['IPAddress'] !== $_SERVER['REMOTE_ADDR'] ) {
+                    // error
+if(DEBUG)	echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Login could not be validated! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                    #************ DENY PAGE ACCESS ***********#
+
+                    session_destroy();
+
+                } else {
+                    // success
+if(DEBUG)	echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid login. <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $loggedIn = true;
+                }
+
+
 				
 				
 
@@ -39,7 +79,7 @@
     </head>
     <body>
 
-    <!-- ------------- NAGIVATION BEGIN --------------------------- -->
+    <!-- ------------- NAVIGATION BEGIN --------------------------- -->
 
         <nav class="navigation">
 
@@ -54,8 +94,8 @@
                         <div class="error"><?= $errorLogin ?></div>
                         <!-- security by obscurity: names are deliberately 
                             chosen to be obscure -->
-                        <input class="loginfield" type="text" name="b1" placeholder="Email">
-                        <input class="loginfield" type="password" name="b2" placeholder="Password">
+                        <input class="login-field" type="text" name="b1" placeholder="Email">
+                        <input class="login-field" type="password" name="b2" placeholder="Password">
 
                         <input class="submit-button" type="submit" value="Login">
 
