@@ -9,6 +9,17 @@
 				require_once('./include/config.inc.php');
                 require_once('./include/form.inc.php');
                 require_once('./include/db.inc.php');
+
+#*************************************************************************#
+
+				
+				#****************************************#
+				#********* INITIALIZE VARIABLES *********#
+				#****************************************#
+
+                $loggedIn = false;
+
+                $errorLogin = NULL; 
 				
 				
 
@@ -27,12 +38,39 @@
 		<link rel="stylesheet" href="./css/debug.css">
     </head>
     <body>
+    <!-- ------------- NAGIVATION BEGIN --------------------------- -->
+        <nav class="navigation">
+            <!-- toggle navigation depending on the login status -->
+            <?php if ( $loggedIn === false ): ?>
+            <!-- ------------- LOGIN FORM BEGIN --------------------------- -->
+                <form action="" method="POST">
+                    <input type="hidden" name="loginForm">
 
-    <!-- ------------- LOGIN FORM BEGIN --------------------------- -->
-        <div class="navigation">
-           
-        </div>
-    <!-- ------------- LOGIN FORM END ----------------------------- -->
+                    <fieldset>
+                        <legend>Author Login</legend>
+                        <div class="error"><?= $errorLogin ?></div>
+                        <!-- security by obscurity: names are deliberately 
+                            chosen to be obscure -->
+                        <input class="loginfield" type="text" name="b1" placeholder="Email">
+                        <input class="loginfield" type="password" name="b2" placeholder="Password">
+
+                        <input class="submit-button" type="submit" value="Login">
+
+                    </fieldset>
+                </form>
+            <!-- ------------- LOGIN FORM END ----------------------------- -->
+
+            <?php else: ?>
+
+            <!-- ------------- NAV LINKS BEGIN ---------------------------- -->
+                <a class="link" href="./dashboard.php">Dashboard >></a>
+                <a class="link" href="?action=logout">>> Logout</a>
+
+            <!-- ------------- NAV LINKS END ------------------------------ -->
+            <?php endif ?>
+
+        </nav>
+    <!-- ------------- NAVIGATION END ----------------------------- -->
 
 
     <!-- ------------- HEADER BEGIN ------------------------------- -->

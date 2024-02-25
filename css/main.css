@@ -8,10 +8,66 @@ body {
     background-image: url("./images/background.png");
     background-repeat: repeat-y;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     width: 100vw;
     overflow-y: auto;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    letter-spacing: 0.05rem;
 }
+
+/*  -------- HEADER --------- */
+
+.navigation {
+    height: 85px;
+    width: 90%;
+    background-color: rgb(11, 11, 60);
+    border: 2px solid grey;
+    border-radius: 8px;
+    margin: 20px 5%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 10px;
+}
+
+fieldset legend {
+    color: white;
+    font-size: 0.8rem;
+}
+
+fieldset {
+    padding: 10px 20px;
+    border: 1px solid grey;
+    border-radius: 8px;
+}
+
+.loginfield {
+    padding: 5px;
+    border-radius: 4px;
+} 
+
+.submit-button {
+    padding: 4px 12px;
+}
+
+.navigation a {
+    color: white;
+    text-decoration: none;
+    margin: 5px;
+}
+
+.navigation a:hover {
+    color: #4e93ac;
+}
+
+.error {
+    color: rgb(237, 105, 105);
+    margin-bottom: 2px;
+    font-size: 0.8rem;
+}
+
 
 
 /*  -------- HEADER --------- */
@@ -31,5 +87,5 @@ h1 {
     color: white;
     font-size: 2.5rem;
     letter-spacing: 0.3rem;
-    font-family: fantasy;
+    font-family: Herculanum, fantasy;
 }
