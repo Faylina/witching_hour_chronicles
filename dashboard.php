@@ -24,7 +24,8 @@
                 #********* ARTICLE VARIABLES ************#
                 $category           = NULL;
                 $title              = NULL;
-                $article            = 'Your article...';
+                $article            = NULL;
+                $imagePath          = NULL;
 
                 #********* ERROR VARIABLES **************#
                 $errorTitle         = NULL;
@@ -52,10 +53,11 @@
                 #************ START / CONTINUE SESSION ***********#
 
                 session_start();
-
+/*
 if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_SESSION <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	    print_r($_SESSION);					
 if(DEBUG_A)	    echo "</pre>";
+*/
 
                 #****************************************#
 				#******** CHECK FOR VALID LOGIN *********#
@@ -124,27 +126,29 @@ if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERRO
                 }
 
                 // Step 4 DB: evaluate the DB-operation and close the DB connection
-                $dbUserArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
+                $dbUserArray = $PDOStatement -> fetch(PDO::FETCH_ASSOC);
 
                 // close DB connection
                 dbClose($PDO, $PDOStatement);
-
+/*
 if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$dbUserArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	print_r($dbUserArray);					
 if(DEBUG_A)	echo "</pre>";
+*/
+
 
                 // create variables for greeting
 
-                $userFirstName  = $dbUserArray[0]['userFirstName'];
-                $userLastName   = $dbUserArray[0]['userLastName'];
+                $userFirstName  = $dbUserArray['userFirstName'];
+                $userLastName   = $dbUserArray['userLastName'];
 
 #*************************************************************************#
 				
-				#****************************************#
-				#******** PROCESS URL PARAMETERS ********#
-				#****************************************#
+				#***************************************************#
+				#******** PROCESS URL PARAMETERS FOR LOGOUT ********#
+				#***************************************************#
 
-                #******** PREVIEW URL PARAMETERS ********#
+                #******** PREVIEW URL PARAMETERS *******************#
 /*
 if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_GET <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	    print_r($_GET);					
@@ -193,7 +197,7 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
 #*************************************************************************#
 
 				#****************************************#
-				#****** FETCH CATEGORIES FORM DB ********#
+				#****** FETCH CATEGORIES FROM DB ********#
 				#****************************************#
 
 				#****************************************#
@@ -209,7 +213,7 @@ if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching
 
                 // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
-                $sql = 'SELECT catLabel FROM categories';
+                $sql = 'SELECT catID, catLabel FROM categories';
 
                 $placeholders = array();
 
@@ -236,6 +240,7 @@ if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERRO
 if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	print_r($categoryArray);				
 if(DEBUG_A)	echo "</pre>";
+
 
 
 #*************************************************************************#
@@ -331,6 +336,7 @@ if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b
                         } else {
                             // success
 if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The category does not exist in the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
                             #************ 2. SAVE THE CATEGORY TO DB *************#
 
 if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Saving category to the database... <i>(" . basename(__FILE__) . ")</i></p>\n";
@@ -379,7 +385,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
                                 // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
-                                $sql = 'SELECT catLabel FROM categories';
+                                $sql = 'SELECT catID, catLabel FROM categories';
 
                                 $placeholders = array();
 
@@ -418,7 +424,194 @@ if(DEBUG_A)	                    echo "</pre>";
                 } // PROCESS CATEGORY FORM END
 
 
-				
+#*************************************************************************#
+
+				#****************************************#
+				#******** PROCESS ARTICLE FORM **********#
+				#****************************************#
+
+                #******** PREVIEW POST ARRAY ************#
+/*
+if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_POST <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	    print_r($_POST);					
+if(DEBUG_A)	    echo "</pre>";
+*/
+
+
+                // Step 1 FORM: Check whether the form has been sent
+
+                if( isset($_POST['articleForm']) === true ) {
+if(DEBUG)		    echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The form 'articleForm' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";									
+                    
+                    // Step 2 FORM: Read, sanitize and output form data
+
+if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Reading and sanitizing form data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $category   = sanitizeString($_POST['b1']);
+                    $title      = sanitizeString($_POST['b2']);
+                    $alignment  = sanitizeString($_POST['b3']);
+                    $article    = sanitizeString($_POST['b4']);
+
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$category: $category <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$title: $title <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$alignment: $alignment <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$article: $article <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    // Step 3 FORM: Field validation
+
+if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating fields... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $errorCategory  = validateInputString( $category );
+                    $errorTitle     = validateInputString( $title );
+                    // $alignment is not mandatory but should return a value either way. It would indicate an error should it return empty.
+                    $errorAlignment = validateInputString( $alignment, minLength:4, maxLength:5 );
+                    $errorArticle   = validateInputString( $article );
+
+                    #**************** FINAL FORM VALIDATION 1 *****************#
+
+                    if( $errorCategory  !== NULL OR 
+                        $errorTitle     !== NULL OR 
+                        $errorAlignment !== NULL OR
+                        $errorArticle   !== NULL ) 
+                    {
+                        // error
+if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 1: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                    } else {
+                        // success
+if(DEBUG)	            echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 1: The form is formally free of errors. <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        #****************************************#
+				        #************ IMAGE UPLOAD **************#
+				        #****************************************#
+
+                        #************ PREVIEW IMAGE ARRAY **************************#
+/*
+if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_FILES <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	print_r($_FILES);					
+if(DEBUG_A)	echo "</pre>";
+*/
+
+                        #************ CHECK IF IMAGE UPLOAD IS ACTIVE **************#
+
+                        if( $_FILES['image']['tmp_name'] === '') {
+                            // image upload is not active
+if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Image upload is NOT active! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                        } else {
+                            // image upload is active
+if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Image upload is active. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                            #************ VALIDATE IMAGE UPLOAD ********************#
+
+                            $validatedImageArray = validateImageUpload( $_FILES['image']['tmp_name'] );
+/*
+if(DEBUG_A)	                echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$validatedImageArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	                print_r($validatedImageArray);					
+if(DEBUG_A)	                echo "</pre>";
+*/
+
+                            if( $validatedImageArray['imageError'] !== NULL ) {
+                                // error
+if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: ERROR with image upload: $validatedImageArray[imageError] <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                                $errorImage = $validatedImageArray['imageError'];
+
+                            } else {
+                                // success
+if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Image was successfully uploaded to $validatedImageArray[imagePath]. <i>(" . basename(__FILE__) . ")</i></p>\n";		
+
+                                $imagePath = $validatedImageArray['imagePath'];
+
+                            } // VALIDATE IMAGE UPLOAD
+
+                        } // IMAGE UPLOAD END
+
+                        #**************** FINAL FORM VALIDATION 2 (IMAGE UPLOAD VALIDATION) *****************#
+
+                        if( $errorImage !== NULL ) {
+                            // error
+if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 2: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                        } else {
+                            // success
+if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 2: The form is completely free of errors. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+
+                            // Step 4 FORM: data processing
+if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The form data is being further processed... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                            #**************** UPLOAD DATA TO DATABASE *****************#
+if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Uploading form data to database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            #****************************************#
+				            #************ DB OPERATION **************#
+				            #****************************************#
+
+                            // Step 1 DB: Connect to database
+
+                            $PDO = dbConnect('blogprojekt');
+
+                            // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                            $sql = 'INSERT INTO blogs 
+                                    (blogHeadline, blogImagePath, blogImageAlignment, blogContent, catID, userID)
+                                    VALUES
+                                    (:blogHeadline, :blogImagePath, :blogImageAlignment, :blogContent, :catID, :userID)';
+
+                            $placeholders = array(  'blogHeadline'          => $title, 
+                                                    'blogImagePath'         => $imagePath, 
+                                                    'blogImageAlignment'    => $alignment, 
+                                                    'blogContent'           => $article, 
+                                                    'catID'                 => $category, 
+                                                    'userID'                => $userID );
+
+                            // Step 3 DB: Prepared Statements
+
+                            try {
+                                // Prepare: prepare the SQL-Statement
+                                $PDOStatement = $PDO -> prepare($sql);
+                                
+                                // Execute: execute the SQL-Statement and include the placeholder
+                                $PDOStatement -> execute($placeholders);
+                                // showQuery($PDOStatement);
+                                
+                            } catch(PDOException $error) {
+if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                            }
+
+                            // Step 4 DB: evaluate the DB-operation and close the DB connection
+
+                            $rowCount = $PDOStatement -> rowCount();
+
+if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            if( $rowCount !== 1 ) {
+                                // error
+if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The blog article could not be saved to the database! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                                $dbError = 'The blog article could not be saved. Please contact your admin.';
+
+                                // TODO: log to error log
+
+                            } else {
+                                // success
+if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog article has been successfully saved to the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                                $dbSuccess = 'Your blog article has been published.';
+
+                                dbClose($PDO,$PDOStatement); 
+
+                                $category   = NULL;
+                                $title      = NULL;
+                                $alignment  = NULL;
+                                $article    = NULL;
+
+                            } // UPLOAD DATA TO DATABASE
+
+                        } // FINAL FORM VALIDATION 2 END
+
+                    } // FINAL FORM VALIDATION 1 END
+
+                } // PROCESS ARTICLE FORM END
+
 #*************************************************************************#
 ?>
 
@@ -483,7 +676,7 @@ if(DEBUG_A)	                    echo "</pre>";
                 <label for="b1">Choose a category</label>
                 <select name="b1" id="b1" class="form-text">
                     <?php foreach( $categoryArray AS $value ): ?>
-                        <option value="<?= $value['catLabel'] ?>" value="<?php if($value['catLabel'] === $category) echo 'selected'?>">
+                        <option value="<?= $value['catID'] ?>" <?php if($value['catID'] == $category) echo 'selected'?>">
                             <?= $value['catLabel'] ?>
                         </option>
                     <?php endforeach ?>
@@ -514,8 +707,8 @@ if(DEBUG_A)	                    echo "</pre>";
                     <label for="b3">Choose the alignment of the image</label>
                     <br>
                     <select name="b3" id="b3" class="form-select">
-                        <option value="left">Left</option>
-                        <option value="right">Right</option>
+                        <option value="left" <?php if( $alignment === 'left') echo 'selected' ?>>Left</option>
+                        <option value="right" <?php if( $alignment === 'right') echo 'selected' ?>>Right</option>
                     </select>
                 </fieldset>
                 <br>
@@ -558,7 +751,6 @@ if(DEBUG_A)	                    echo "</pre>";
                     <li>&copy;</li> 
                     <li>Faylina 2024</li>
                 </ul>
-                <div><strong>Disclaimer:</strong> All images, apart from the logo and background, were generated by AI.</div>
             </div>
         </footer>
     <!-- ------------- FOOTER END ---------------------------------- -->

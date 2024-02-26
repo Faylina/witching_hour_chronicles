@@ -185,7 +185,7 @@ if(DEBUG)	echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching dat
 
                         $placeholders = array('userEmail' => $email);
 
-                        // Step 3 DB: Prepared Statement
+                        // Step 3 DB: Prepared Statements
 
                         try {
                             // Prepare: prepare the SQL-Statement
