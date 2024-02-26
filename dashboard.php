@@ -22,6 +22,7 @@
                 $userLastName       = NULL;
 
                 #********* ARTICLE VARIABLES ************#
+                $category           = NULL;
                 $title              = NULL;
                 $article            = 'Your article...';
 
@@ -86,7 +87,6 @@ if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid 
                 }           
 
 #*************************************************************************#
-
 				
 				#****************************************#
 				#******** PROCESS URL PARAMETERS ********#
@@ -136,6 +136,236 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                     } // LOGOUT END
                     
                 } // PROCESS URL PARAMETERS END
+
+
+#*************************************************************************#
+
+				#****************************************#
+				#****** FETCH CATEGORIES FORM DB ********#
+				#****************************************#
+
+				#****************************************#
+				#************* DB OPERATION *************#
+				#****************************************#
+
+                //// Step 1 DB: Connect to database
+
+                $PDO = dbConnect('blogprojekt');
+
+                #************ FETCH DATA FROM DB *************#
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                $sql = 'SELECT catLabel FROM categories';
+
+                $placeholders = array();
+
+                // Step 3 DB: Prepared Statement
+
+                try {
+                    // Prepare: prepare the SQL-Statement
+                    $PDOStatement = $PDO -> prepare($sql);
+                    
+                    // Execute: execute the SQL-Statement and include the placeholder
+                    $PDOStatement -> execute($placeholders);
+                    // showQuery($PDOStatement);
+                    
+                } catch(PDOException $error) {
+if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                }
+
+                // Step 4 DB: evaluate the DB-operation and close the DB connection
+                $categoryArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
+
+                // close DB connection
+                dbClose($PDO, $PDOStatement);
+
+if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$dbUserArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	print_r($categoryArray);				
+if(DEBUG_A)	echo "</pre>";
+
+
+#*************************************************************************#
+
+				#****************************************#
+				#******** PROCESS CATEGORY FORM *********#
+				#****************************************#
+
+                #******** PREVIEW POST ARRAY ************#
+/*
+if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_POST <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	print_r($_POST);					
+if(DEBUG_A)	echo "</pre>";
+*/
+
+                // Step 1 FORM: Check whether the form has been sent
+
+                if( isset($_POST['categoryForm']) === true ) {
+if(DEBUG)		    echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The form 'categoryForm' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";									
+
+                    // Step 2 FORM: Read, sanitize and output form data
+
+if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The form data is being read and sanitized... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $newCategory = sanitizeString($_POST['b5']);
+
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$newCategory: $newCategory <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    // Step 3 FORM: Field validation
+
+if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating fields... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $errorCategory = validateInputString( $newCategory );
+
+                    // Final form validation
+
+                    if( $errorCategory !== NULL ) {
+                        // error
+if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                        $errorCategory = 'Please enter a category of up to 256 characters.';
+
+                    } else {
+                        // success
+if(DEBUG)	            echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The form is formally free of errors. <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        // Step 4 FORM: data processing
+
+                        #****************************************#
+				        #************ DB OPERATIONS *************#
+				        #****************************************#
+
+                        // Step 1 DB: Connect to database
+
+                        $PDO = dbConnect('blogprojekt');
+
+                        #************ 1. CHECK WHETHER CATEGORY ALREADY EXISTS IN DB *************#
+
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Checking whether the category exists in the database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                        $sql = 'SELECT COUNT(catLabel) FROM categories WHERE catLabel = :catLabel';
+
+                        $placeholders = array('catLabel' => $newCategory );
+
+                        // Step 3 DB: Prepared Statements
+
+                        try {
+                            // Prepare: prepare the SQL-Statement
+                            $PDOStatement = $PDO->prepare($sql);
+                            
+                            // Execute: execute the SQL-Statement and include the placeholder
+                            $PDOStatement->execute($placeholders);
+                            // showQuery($PDOStatement);
+                            
+                        } catch(PDOException $error) {
+if(DEBUG) 		            echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                        }
+
+                        // Step 4 DB: evaluate the DB-operation 
+
+                        $count = $PDOStatement -> fetchColumn();
+
+if(DEBUG_V)	            echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$count: $count <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        if( $count !== 0 ) {
+                            // error
+if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The catefory already exists in the database! <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            $errorCategory = 'This category already exists.';
+
+                        } else {
+                            // success
+if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The category does not exist in the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                            #************ 2. SAVE THE CATEGORY TO DB *************#
+
+if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Saving category to the database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                            $sql = 'INSERT INTO categories (catLabel) VALUES (:catLabel)';
+
+                            $placeholders = array('catLabel' => $newCategory);
+
+                            // Step 3 DB: Prepared Statements
+
+                            try {
+                                // Prepare: prepare the SQL-Statement
+                                $PDOStatement = $PDO->prepare($sql);
+                                
+                                // Execute: execute the SQL-Statement and include the placeholder
+                                $PDOStatement->execute($placeholders);
+                                // showQuery($PDOStatement);
+                                
+                            } catch(PDOException $error) {
+if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                            }
+
+                            // Step 4 DB: evaluate the DB-operation
+
+                            $rowCount = $PDOStatement -> rowCount();
+
+if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            if( $rowCount !== 1 ) {
+                                // error
+if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Error when attempting to save $rowCount category! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                                $dbError = 'The category could not be saved. Please try again later.'
+                                ;
+                                // TODO: Log to error log
+
+                            } else {
+                                // success
+if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount category was saved to the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                                $dbSuccess = 'The new category has been saved.';
+
+                                #************ 3. UPDATE THE CATEGORY SELECTION *************#
+
+                                // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                                $sql = 'SELECT catLabel FROM categories';
+
+                                $placeholders = array();
+
+                                // Step 3 DB: Prepared Statements
+
+                                try {
+                                    // Prepare: prepare the SQL-Statement
+                                    $PDOStatement = $PDO->prepare($sql);
+                                    
+                                    // Execute: execute the SQL-Statement and include the placeholder
+                                    $PDOStatement->execute($placeholders);
+                                    // showQuery($PDOStatement);
+                                    
+                                } catch(PDOException $error) {
+if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                                }
+
+                                // Step 4 DB: evaluate the DB-operation and close the DB connection
+
+                                $categoryArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
+
+                                // close the DB connection
+                                dbClose($PDO, $PDOStatement);
+
+if(DEBUG_A)	                    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	                    print_r($categoryArray);					
+if(DEBUG_A)	                    echo "</pre>";
+
+
+                            } //2. SAVE THE CATEGORY TO DB
+
+                        } // 1. CHECK WHETHER CATEGORY ALREADY EXISTS IN DB
+
+                    } // FINAL FORM VALIDATION
+
+                } // PROCESS CATEGORY FORM END
+
+
 				
 #*************************************************************************#
 ?>
@@ -173,6 +403,15 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
             <div class="title">
                 <h1>Witching Hour Chronicles</h1>
                 <div class="active-user">Happy writing, <?= $userFirstName ?> <?= $userLastName ?>!</div>
+                <!-- ------------- USER MESSAGES BEGIN ------------------------------- -->
+
+                <?php if( isset($dbError) === true ): ?>
+                    <h3 class="error"><?= $dbError?></h3>
+                <?php elseif( isset($dbSuccess) === true ): ?>
+                    <h3 class="success"><?= $dbSuccess?></h3>
+                <?php endif ?>
+
+                <!-- ------------- USER MESSAGES END --------------------------------- -->
             </div>
 
         </header>
@@ -180,7 +419,7 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
 
         <div class="forms">
 
-            <!-- ------------- ARTICLE FORM BEGIN -------------------------- -->
+            <!-- ------------- ARTICLE FORM BEGIN ------------------------- -->
 
             <form class="article-form" action="" method="POST" enctype="multipart/form-data">
                 <div class="form-heading">Write a new blog article</div>
@@ -191,8 +430,11 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                 <!-- ------------- Category ------------- -->
                 <label for="b1">Choose a category</label>
                 <select name="b1" id="b1" class="form-text">
-                    <option value="category 1">Category 1</option>
-                    <option value="category 2">Category 2</option>
+                    <?php foreach( $categoryArray AS $value ): ?>
+                        <option value="<?= $value['catLabel'] ?>" value="<?php if($value['catLabel'] === $category) echo 'selected'?>">
+                            <?= $value['catLabel'] ?>
+                        </option>
+                    <?php endforeach ?>
                 </select>
 
                 <br>

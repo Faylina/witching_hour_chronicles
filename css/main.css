@@ -68,14 +68,6 @@ fieldset {
     color: #4e93ac;
 }
 
-.error {
-    color: rgb(237, 105, 105);
-    margin-bottom: 2px;
-    font-size: 0.8rem;
-}
-
-
-
 /*  -------- HEADER --------- */
 
 header {
@@ -171,6 +163,19 @@ h1 {
     letter-spacing: 0.05rem;
 }
 
+/*  -------- USER MESSAGES --------- */
+
+.error {
+    color: rgb(237, 105, 105);
+    margin-bottom: 2px;
+    font-size: 0.8rem;
+}
+
+.success {
+    color: rgb(119, 225, 129);
+    margin-bottom: 2px;
+    font-size: 0.8rem;
+}
 
 /*  -------- FOOTER --------- */
 
