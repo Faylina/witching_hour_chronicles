@@ -17,8 +17,24 @@
 				#********* INITIALIZE VARIABLES *********#
 				#****************************************#
 
-                $userFirstName  = NULL;
-                $userLastName   = NULL;
+                #********* USER VARIABLES ***************#
+                $userFirstName      = NULL;
+                $userLastName       = NULL;
+
+                #********* ARTICLE VARIABLES ************#
+                $title              = NULL;
+                $article            = 'Your article...';
+
+                #********* ERROR VARIABLES **************#
+                $errorTitle         = NULL;
+                $errorImage         = NULL;
+                $errorArticle       = NULL;
+                $errorCategory      = NULL;
+
+                #********* GENERATE LIST OF ALLOWED MIME TYPES *********#
+
+                $allowedMIMETypes   = implode(', ', array_keys(IMAGE_ALLOWED_MIME_TYPES));
+                $mimeTypes          = strtoupper( str_replace( array('image/jpeg, ', 'image/'), '', $allowedMIMETypes));
 
 #*************************************************************************#
 
@@ -162,16 +178,83 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
         </header>
     <!-- ------------- HEADER END ---------------------------------- -->
 
+        <div class="forms">
 
-    <!-- ------------- ARTICLE FORM BEGIN -------------------------- -->
-        
-    <!-- ------------- ARTICLE FORM END ---------------------------- -->
+            <!-- ------------- ARTICLE FORM BEGIN -------------------------- -->
+
+            <form class="article-form" action="" method="POST" enctype="multipart/form-data">
+                <div class="form-heading">Write a new blog article</div>
+                <br>
+                <input type="hidden" name="articleForm">
 
 
-    <!-- ------------- CATEGORY FORM BEGIN ------------------------- -->
+                <!-- ------------- Category ------------- -->
+                <label for="b1">Choose a category</label>
+                <select name="b1" id="b1" class="form-text">
+                    <option value="category 1">Category 1</option>
+                    <option value="category 2">Category 2</option>
+                </select>
 
-    <!-- ------------- CATEGORY FORM END --------------------------- -->
+                <br>
+                <!-- ------------- Title ---------------- -->
+                <label for="b2">Write the title of your article</label>
+                <div class="error"><?= $errorTitle ?></div>
+                <input type="text" class="form-text" name="b2" id="b2" placeholder="Title" value="<?= $title ?>">
 
+                <br>
+                <!-- ------------- Image Upload ---------- -->
+                <fieldset>
+                    <legend>Upload an image</legend>
+                    <!-- ------------- Image Info Text ---------- -->
+                    <p class="image-info">
+                        You may upload an image of the type <?= $mimeTypes ?>. <br>
+                        The width of the image may not exceed <?= IMAGE_MAX_WIDTH ?> pixels. <br>
+                        The height of the image may not exceed <?= IMAGE_MAX_HEIGHT ?> pixels. <br>
+                        The size of the file may not exceed <?= IMAGE_MAX_SIZE/1024 ?> kB.
+                    </p>
+                    <br>
+                    <div class="error"><?= $errorImage ?></div>
+                    <input type="file" name="image">
+                    <br>
+                    <br>
+                    <label for="b3">Choose the alignment of the image</label>
+                    <br>
+                    <select name="b3" id="b3" class="form-select">
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                </fieldset>
+                <br>
+
+                <!-- ------------- Article ------------------ -->
+                <label for="b4">Write your article</label>
+                <div class="error"><?= $errorArticle ?></div>
+                <textarea name="b4" id="b4" class="textarea" cols="30" rows="25"><?= $article ?></textarea>
+                <br>
+                <input type="submit" class="form-button" value="Publish">
+            </form>
+                
+            <!-- ------------- ARTICLE FORM END ---------------------------- -->
+
+
+            <!-- ------------- CATEGORY FORM BEGIN ------------------------- -->
+
+            <form class="category-form" action="" method="POST">
+
+                <div class="form-heading">Create a new category</div>
+                
+                <input type="hidden" name="categoryForm">
+                <br>
+                <label for="b5">Name the new category</label>
+                <div class="error"><?= $errorCategory ?></div>
+                <input type="text" class="form-text" name="b5" id="b5" placeholder="Category name">
+                <br>
+                <input type="submit" class="form-button" value="Create category">
+            </form>
+
+            <!-- ------------- CATEGORY FORM END --------------------------- -->
+            
+        </div>         
 
     <!-- ------------- FOOTER BEGIN -------------------------------- -->
         <footer>
