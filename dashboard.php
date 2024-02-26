@@ -14,6 +14,16 @@
 
 				
 				#****************************************#
+				#********* INITIALIZE VARIABLES *********#
+				#****************************************#
+
+                $userFirstName  = NULL;
+                $userLastName   = NULL;
+
+#*************************************************************************#
+
+				
+				#****************************************#
 				#********** SECURE PAGE ACCESS **********#
 				#****************************************#
 
@@ -131,8 +141,8 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
         <nav class="navigation">
 
             <!-- ------------- NAV LINKS BEGIN ---------------------------- -->
-                <a class="link" href="./index.php">Homepage >></a>
-                <a class="link" href="?action=logout">>> Logout</a>
+                <a class="link" href="./index.php"><< Homepage</a>
+                <a class="link" href="?action=logout">Logout >></a>
 
             <!-- ------------- NAV LINKS END ------------------------------ -->
 
@@ -144,7 +154,10 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
         <header>
 
             <img class="logo" src="./css/images/logo.png" alt="Parchment paper with a teal quill, a full moon in the background">
-            <h1>Witching Hour Chronicles</h1>
+            <div class="title">
+                <h1>Witching Hour Chronicles</h1>
+                <div class="active-user">Happy writing, <?= $userFirstName ?> <?= $userLastName ?>!</div>
+            </div>
 
         </header>
     <!-- ------------- HEADER END ---------------------------------- -->

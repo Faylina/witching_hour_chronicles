@@ -20,7 +20,7 @@ body {
     letter-spacing: 0.05rem;
 }
 
-/*  -------- HEADER --------- */
+/*  -------- NAVIGATION --------- */
 
 .navigation {
     height: 85px;
@@ -80,7 +80,7 @@ header {
     display: flex;
     gap: 5%;
     align-items: center;
-    width: 70%;
+    width: 90%;
 }
 
 .logo {
@@ -93,6 +93,15 @@ h1 {
     letter-spacing: 0.3rem;
     font-family: Herculanum, fantasy;
 }
+
+.title {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    height: 100%;
+    color: white;
+}
+
 
 /*  -------- FOOTER --------- */
 

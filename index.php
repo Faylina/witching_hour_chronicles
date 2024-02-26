@@ -317,8 +317,8 @@ if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__
             <?php else: ?>
 
             <!-- ------------- NAV LINKS BEGIN ---------------------------- -->
-                <a class="link" href="./dashboard.php">Dashboard >></a>
-                <a class="link" href="?action=logout">>> Logout</a>
+                <a class="link" href="./dashboard.php"><< Dashboard</a>
+                <a class="link" href="?action=logout">Logout >></a>
 
             <!-- ------------- NAV LINKS END ------------------------------ -->
             <?php endif ?>
