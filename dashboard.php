@@ -84,7 +84,59 @@ if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid 
                     session_regenerate_id(true);
 
                     $userID = $_SESSION['ID'];
-                }           
+                }         
+                
+#*************************************************************************#
+				
+				#*****************************************************#
+				#******** FETCH USER DATA FROM DB FOR GREETING *******#
+				#*****************************************************#
+
+                #****************************************#
+				#************ DB OPERATIONS *************#
+				#****************************************#
+
+                // Step 1 DB: Connect to database
+
+                $PDO = dbConnect('blogprojekt');
+
+                #************ FETCH DATA FROM DB *************#
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                $sql = 'SELECT userFirstName, userLastName FROM users WHERE userID = :userID';
+
+                $placeholders = array('userID' => $userID);
+
+                // Step 3 DB: Prepared Statement
+
+                try {
+                    // Prepare: prepare the SQL-Statement
+                    $PDOStatement = $PDO -> prepare($sql);
+                    
+                    // Execute: execute the SQL-Statement and include the placeholder
+                    $PDOStatement -> execute($placeholders);
+                    // showQuery($PDOStatement);
+                    
+                } catch(PDOException $error) {
+if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                }
+
+                // Step 4 DB: evaluate the DB-operation and close the DB connection
+                $dbUserArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
+
+                // close DB connection
+                dbClose($PDO, $PDOStatement);
+
+if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$dbUserArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	print_r($dbUserArray);					
+if(DEBUG_A)	echo "</pre>";
+
+                // create variables for greeting
+
+                $userFirstName  = $dbUserArray[0]['userFirstName'];
+                $userLastName   = $dbUserArray[0]['userLastName'];
 
 #*************************************************************************#
 				
@@ -181,7 +233,7 @@ if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERRO
                 // close DB connection
                 dbClose($PDO, $PDOStatement);
 
-if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$dbUserArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	print_r($categoryArray);				
 if(DEBUG_A)	echo "</pre>";
 
