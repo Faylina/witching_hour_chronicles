@@ -36,8 +36,8 @@
 
                 session_start();
 
-if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$arrayName <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	    print_r($array);					
+if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_SESSION <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	    print_r($_SESSION);					
 if(DEBUG_A)	    echo "</pre>";
 
                 #****************************************#
@@ -46,7 +46,7 @@ if(DEBUG_A)	    echo "</pre>";
 
                 if( isset($_SESSION['ID']) === false OR $_SESSION['IPAddress'] !== $_SERVER['REMOTE_ADDR'] ) {
                     // error
-if(DEBUG)	echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Login could not be validated! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+if(DEBUG)	        echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Login could not be validated! <i>(" . basename(__FILE__) . ")</i></p>\n";	
 
                     #************ DENY PAGE ACCESS ***********#
 
@@ -54,14 +54,182 @@ if(DEBUG)	echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Login could n
 
                 } else {
                     // success
-if(DEBUG)	echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid login. <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid login. <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                     $loggedIn = true;
                 }
 
+#*************************************************************************#
 
 				
+				#****************************************#
+				#******** PROCESS URL PARAMETERS ********#
+				#****************************************#
+
+
+#*************************************************************************#
+
 				
+				#****************************************#
+				#********** PROCESS LOGIN FORM **********#
+				#****************************************#
+
+                #********** PREVIEW POST ARRAY **********#
+/*
+if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_POST <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	    print_r($_POST);					
+if(DEBUG_A)	    echo "</pre>";
+*/
+
+                #************ FORM PROCESSING ***********#
+
+                // Step 1 FORM: Check whether the form has been sent
+
+                if( isset($_POST['loginForm']) === true ) {
+if(DEBUG)		echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The form 'loginForm' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+
+                    // Step 2 FORM: Read, sanitize and output form data
+
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Reading and sanitizing form data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $email      = sanitizeString($_POST['b1']);
+                    $password   = sanitizeString($_POST['b2']);
+
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$email: $email <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$password: $password <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+
+                    // Step 3 FORM: Field validation
+
+if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating fields... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $errorEmail     = validateEmail($email);
+                    $errorPassword  = validateInputString($password, minLength:4);
+
+
+                    // Final form validation
+
+                    if( $errorEmail !== NULL OR $errorPassword !== NULL ) {
+                        // error
+if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                        $errorLogin = 'Invalid email or password.';
+
+                    } else {
+                        //success
+if(DEBUG)	            echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The form is formally free of errors. <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+
+                        // Step 4 FORM: data processing
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The form data is being further processed... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+
+                        #****************************************#
+				        #************ DB OPERATIONS *************#
+				        #****************************************#
+
+                        // Step 1 DB: Connect to database
+
+                        $PDO = dbConnect('blogprojekt');
+
+                        #************ FETCH DATA FROM DB *************#
+if(DEBUG)	echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                        $sql = 'SELECT userID, userPassword FROM users WHERE userEmail = :userEmail';
+
+                        $placeholders = array('userEmail' => $email);
+
+                        // Step 3 DB: Prepared Statement
+
+                        try {
+                            // Prepare: prepare the SQL-Statement
+                            $PDOStatement = $PDO -> prepare($sql);
+                            
+                            // Execute: execute the SQL-Statement and include the placeholder
+                            $PDOStatement -> execute($placeholders);
+                            // showQuery($PDOStatement);
+                            
+                        } catch(PDOException $error) {
+if(DEBUG) 		            echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                        }
+
+                        // Step 4 DB: evaluate the DB-operation and close the DB connection
+                        $dbUserArray = $PDOStatement -> fetch(PDO::FETCH_ASSOC);
+
+                        // close DB connection
+                        dbClose($PDO, $PDOStatement);
+
+if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$dbUserArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	print_r($dbUserArray);					
+if(DEBUG_A)	echo "</pre>";
+
+                        #************ 1. VALIDATE EMAIL ADDRESS *************#
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating the email address... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        if( $dbUserArray === false ) {
+                            // error
+if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The email address was not found in the database! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                            $errorLogin = 'Invalid email or password.';
+
+                        } else {
+                            // success
+if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The email address has been found in the database. <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            #************ 2. VALIDATE PASSWORD *************#
+if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating password... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            if( password_verify($password, $dbUserArray['userPassword']) === false ) {
+                                // error
+if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The password in the form does not match the password in the database! <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                                $errorLogin = 'Invalid email or password.';
+
+                            } else {
+                                // success
+if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The password in the form matches the password in the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                                #************ 3. PROCESS LOGIN *************#
+
+if(DEBUG)	                    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The user is being logged in... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                                #************ PREPARE SESSION *************# 
+
+                                session_name('wwwwitchinghourchroniclescom');
+
+                                #************ START SESSION ***************#
+
+                                if( session_start() === false ) {
+                                    // error
+if(DEBUG)	                        echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Error starting session! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                                    $errorLogin = 'Login is not possible. Please allow cookies in your browser.';
+
+                                } else {
+                                    // success
+if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The session has been started successfully. <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                                    #******** SAVE USER DATA INTO SESSION FILE ******#
+
+                                    $_SESSION['ID']         = $dbUserArray['userID'];
+                                    $_SESSION['IPAddress']  = $_SERVER['REMOTE_ADDR'];
+
+                                    #******** REDIRECT TO DASHBOARD ******#
+
+                                    // header('LOCATION: dashboard.php');
+
+                                } // 3. PROCESS LOGIN END
+
+                            } // 2. VALIDATE PASSWORD END
+
+                        } // 1. VALIDATE EMAIL ADDRESS END
+
+                    } // FIELD VALIDATION END
+
+                } // FORM PROCESSING END
 
 #*************************************************************************#
 ?>
