@@ -66,6 +66,52 @@ if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid 
 				#******** PROCESS URL PARAMETERS ********#
 				#****************************************#
 
+                #******** PREVIEW URL PARAMETERS ********#
+/*
+if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_GET <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	    print_r($_GET);					
+if(DEBUG_A)	    echo "</pre>";
+*/
+
+                // Step 1 URL: Check whether the parameters have been sent
+
+                if( isset($_GET['action']) === true ) {
+if(DEBUG)		echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The URL-parameter 'action' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";				
+                    // Step 2 URL: Read, sanitize and output URL data
+
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The URL parameters are being read and sanitized... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $action = sanitizeString($_GET['action']);
+
+if(DEBUG_V)	    echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$action: $action <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    // Step 3 URL: Branching
+
+                    #*************** LOGOUT **************#
+
+                    if( $action === 'logout') {
+
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The user is being logged out... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        // Step 4 URL: processing data
+
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Processing data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        // 1. Delete session file
+                        session_destroy();
+
+                        // 2. Reload homepage
+                        header('LOCATION: index.php');
+
+                        // 3. Fallback in case of an error: end processing of the script
+                        exit();
+                    
+                    } // LOGOUT END
+
+                } // PROCESS URL PARAMETERS END
+
+
+
 
 #*************************************************************************#
 
@@ -219,7 +265,7 @@ if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__
 
                                     #******** REDIRECT TO DASHBOARD ******#
 
-                                    // header('LOCATION: dashboard.php');
+                                    header('LOCATION: dashboard.php');
 
                                 } // 3. PROCESS LOGIN END
 
