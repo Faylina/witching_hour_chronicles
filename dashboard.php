@@ -676,7 +676,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                 <label for="b1">Choose a category</label>
                 <select name="b1" id="b1" class="form-text">
                     <?php foreach( $categoryArray AS $value ): ?>
-                        <option value="<?= $value['catID'] ?>" <?php if($value['catID'] == $category) echo 'selected'?>">
+                        <option value="<?= $value['catID'] ?>" <?php if($value['catID'] == $category) echo 'selected'?>>
                             <?= $value['catLabel'] ?>
                         </option>
                     <?php endforeach ?>
