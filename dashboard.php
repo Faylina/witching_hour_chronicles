@@ -21,9 +21,13 @@
                 $userFirstName      = NULL;
                 $userLastName       = NULL;
 
+                #********* CATEGORY VARIABLES ***********#
+                $newCategory           = NULL;
+
                 #********* ARTICLE VARIABLES ************#
                 $category           = NULL;
                 $title              = NULL;
+                $alignment          = NULL;
                 $article            = NULL;
                 $imagePath          = NULL;
 
@@ -32,6 +36,8 @@
                 $errorImage         = NULL;
                 $errorArticle       = NULL;
                 $errorCategory      = NULL;
+                $dbError            = NULL;
+                $dbSuccess          = NULL;
 
                 #********* GENERATE LIST OF ALLOWED MIME TYPES *********#
 
@@ -236,11 +242,11 @@ if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERRO
 
                 // close DB connection
                 dbClose($PDO, $PDOStatement);
-
+/*
 if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	print_r($categoryArray);				
 if(DEBUG_A)	echo "</pre>";
-
+*/
 
 
 #*************************************************************************#
@@ -351,10 +357,10 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
 
                             try {
                                 // Prepare: prepare the SQL-Statement
-                                $PDOStatement = $PDO->prepare($sql);
+                                $PDOStatement = $PDO -> prepare($sql);
                                 
                                 // Execute: execute the SQL-Statement and include the placeholder
-                                $PDOStatement->execute($placeholders);
+                                $PDOStatement -> execute($placeholders);
                                 // showQuery($PDOStatement);
                                 
                             } catch(PDOException $error) {
@@ -379,7 +385,7 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
                                 // success
 if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount category was saved to the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
 
-                                $dbSuccess = 'The new category has been saved.';
+                                $dbSuccess = "The new category $newCategory has been saved.";
 
                                 #************ 3. UPDATE THE CATEGORY SELECTION *************#
 
@@ -410,10 +416,12 @@ if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ .
                                 // close the DB connection
                                 dbClose($PDO, $PDOStatement);
 
+                                $newCategory = NULL;
+/*
 if(DEBUG_A)	                    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	                    print_r($categoryArray);					
 if(DEBUG_A)	                    echo "</pre>";
-
+*/
 
                             } //2. SAVE THE CATEGORY TO DB
 
@@ -648,19 +656,30 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
             <div class="title">
                 <h1>Witching Hour Chronicles</h1>
                 <div class="active-user">Happy writing, <?= $userFirstName ?> <?= $userLastName ?>!</div>
-                <!-- ------------- USER MESSAGES BEGIN ------------------------------- -->
-
-                <?php if( isset($dbError) === true ): ?>
-                    <h3 class="error"><?= $dbError?></h3>
-                <?php elseif( isset($dbSuccess) === true ): ?>
-                    <h3 class="success"><?= $dbSuccess?></h3>
-                <?php endif ?>
-
-                <!-- ------------- USER MESSAGES END --------------------------------- -->
             </div>
 
         </header>
     <!-- ------------- HEADER END ---------------------------------- -->
+
+
+    <!-- ------------- USER MESSAGE BEGIN ---------------------------------- -->
+
+        <?php if( $dbError !== NULL OR $dbSuccess !== NULL ): ?>
+            <popupBox>
+                <?php if( $dbError ):?>
+                    <h3 class="popup-error"><?= $dbError ?></h3>
+                <?php elseif( $dbSuccess ): ?>
+                    <h3 class="popup-success"><?= $dbSuccess ?></h3>
+                <?php endif ?>
+
+                <?php if( $dbError OR $dbSuccess ): ?>
+                    <a class="button" onclick="document.getElementsByTagName('popupBox')[0].style.display = 'none'">Okay</a>
+                <?php endif ?>
+            </popupBox> 
+        <?php endif ?>
+
+    <!-- ------------- USER MESSAGE END ------------------------------------ -->
+
 
         <div class="forms">
 
@@ -734,7 +753,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                 <br>
                 <label for="b5">Name the new category</label>
                 <div class="error"><?= $errorCategory ?></div>
-                <input type="text" class="form-text" name="b5" id="b5" placeholder="Category name">
+                <input type="text" class="form-text" name="b5" id="b5" placeholder="Category name" value="<?= $newCategory ?>">
                 <br>
                 <input type="submit" class="form-button" value="Create category">
             </form>
