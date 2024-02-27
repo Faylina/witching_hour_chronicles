@@ -109,7 +109,7 @@ if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid 
                 $PDO = dbConnect('blogprojekt');
 
                 #************ FETCH DATA FROM DB *************#
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching user data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                 // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
@@ -215,7 +215,7 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                 $PDO = dbConnect('blogprojekt');
 
                 #************ FETCH DATA FROM DB *************#
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching category data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                 // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
@@ -223,7 +223,7 @@ if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching
 
                 $placeholders = array();
 
-                // Step 3 DB: Prepared Statement
+                // Step 3 DB: Prepared Statements
 
                 try {
                     // Prepare: prepare the SQL-Statement
@@ -473,7 +473,7 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Vali
                     $errorTitle     = validateInputString( $title );
                     // $alignment is not mandatory but should return a value either way. It would indicate an error should it return empty.
                     $errorAlignment = validateInputString( $alignment, minLength:4, maxLength:5 );
-                    $errorArticle   = validateInputString( $article );
+                    $errorArticle   = validateInputString( $article, maxLength:10000 );
 
                     #**************** FINAL FORM VALIDATION 1 *****************#
 

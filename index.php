@@ -9,6 +9,7 @@
 				require_once('./include/config.inc.php');
                 require_once('./include/form.inc.php');
                 require_once('./include/db.inc.php');
+                require_once('./include/dateTime.inc.php');
 
 #*************************************************************************#
 
@@ -275,6 +276,58 @@ if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__
                 } // FORM PROCESSING END
 
 #*************************************************************************#
+
+				#*************************************************#
+				#********** FETCH DATA FOR BLOG FROM DB **********#
+				#*************************************************#
+
+                #*************************************************#
+				#***************** DB OPERATION ******************#
+				#*************************************************#
+
+                // Step 1 DB: Connect to database
+
+                $PDO = dbConnect('blogprojekt');
+
+                #************ FETCH DATA FROM DB *************#
+
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching blog data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                $sql = 'SELECT userFirstName, userLastName, userCity, blogHeadline, blogImagePath, blogImageAlignment, blogContent, blogDate, catLabel
+                        FROM blogs 
+                        INNER JOIN users USING(userID)
+                        INNER JOIN categories USING(catID)';
+
+                $placeholders = array();
+
+                // Step 3 DB: Prepared Statements
+
+                try {
+                    // Prepare: prepare the SQL-Statement
+                    $PDOStatement = $PDO -> prepare($sql);
+                    
+                    // Execute: execute the SQL-Statement and include the placeholder
+                    $PDOStatement -> execute($placeholders);
+                    // showQuery($PDOStatement);
+                    
+                } catch(PDOException $error) {
+if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                }
+
+                // Step 4 DB: evaluate the DB-operation and close the DB connection
+                $blogArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
+
+                // close DB connection
+                dbClose($PDO, $PDOStatement);
+/*
+if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$blogArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	    print_r($blogArray);				
+if(DEBUG_A)	    echo "</pre>";
+*/
+
+#*************************************************************************#
 ?>
 
 <!DOCTYPE html>
@@ -331,17 +384,47 @@ if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__
         <header>
 
             <img class="logo" src="./css/images/logo.png" alt="Parchment paper with a teal quill, a full moon in the background">
-            <h1>Witching Hour Chronicles</h1>
+            <div class="title">
+                <h1>Witching Hour Chronicles</h1>
+                <a href="?action=showAll">Show all blog articles</a>   
+            </div>
 
         </header>
     <!-- ------------- HEADER END ---------------------------------- -->
 
+        <div class="content">
 
-    <!-- ------------- BLOG BEGIN ---------------------------------- -->
-        <div class="blog">
+        <!-- ------------- BLOG BEGIN ---------------------------------- -->
+            <div class="blog">
+                <?php foreach( $blogArray AS $value): ?>
+                    <?php $dateArray = isoToEuDateTime( $value['blogDate'] ) ?>
+                    <div class="blog-category">Category: <?= $value['catLabel'] ?></div>
+                    <div class="blog-title"><?= $value['blogHeadline'] ?></div>
+                    <div class="blog-meta">
+                        <?= $value['userFirstName'] ?> <?= $value['userLastName'] ?> (<?= $value['userCity'] ?>) 
+                        wrote on <?= $dateArray['date'] ?> at <?= $dateArray['time'] ?> o'clock:
+                    </div>
+                    <div class="container clearfix">
+                        <?php if( $value['blogImagePath'] !== NULL ): ?>
+                            <img class="<?= $value['blogImageAlignment']?>" src="<?= $value['blogImagePath']?>" alt="">
+                        <?php endif ?>
+                        <div class="blog-content"><?php echo nl2br( $value['blogContent'] ) ?></div>
+                    </div>
+                    <br>
+                    <hr>
+                    <br>
+                <?php endforeach ?>
+            </div>
+        <!-- ------------- BLOG END ------------------------------------ -->
+
+        <!-- ------------- CATEGORIES BEGIN ---------------------------- -->
+            <div class="categories">
+                
+
+            </div>
+        <!-- ------------- CATEGORIES END ------------------------------ -->
 
         </div>
-    <!-- ------------- BLOG END ------------------------------------ -->
 
 
     <!-- ------------- FOOTER BEGIN -------------------------------- -->
