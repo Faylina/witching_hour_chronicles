@@ -241,6 +241,11 @@ h1 {
     font-size: 1.2rem;
 }
 
+.categories a {
+    text-decoration: none;
+    color: white;
+}
+
 .categories a:hover {
     color: #4e93ac;
     cursor: pointer;
