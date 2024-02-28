@@ -153,61 +153,6 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                     
                 } // PROCESS URL PARAMETERS END
 
-
-#*************************************************************************#
-
-
-				#****************************************#
-				#****** FETCH CATEGORIES FROM DB ********#
-				#****************************************#
-
-				#****************************************#
-				#************* DB OPERATIONS ************#
-				#****************************************#
-
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch categories for the form... <i>(" . basename(__FILE__) . ")</i></p>\n";
-
-                // Step 1 DB: Connect to database
-
-                $PDO = dbConnect('blogprojekt');
-
-                #************ FETCH DATA FROM DB *************#
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching category data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
-
-                // Step 2 DB: Create the SQL-Statement and a placeholder-array
-
-                $sql = 'SELECT catID, catLabel FROM categories';
-
-                $placeholders = array();
-
-                // Step 3 DB: Prepared Statements
-
-                try {
-                    // Prepare: prepare the SQL-Statement
-                    $PDOStatement = $PDO -> prepare($sql);
-                    
-                    // Execute: execute the SQL-Statement and include the placeholder
-                    $PDOStatement -> execute($placeholders);
-                    // showQuery($PDOStatement);
-                    
-                } catch(PDOException $error) {
-if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
-                }
-
-                // Step 4 DB: evaluate the DB-operation and close the DB connection
-
-                $categoryArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
-
-                // close DB connection
-
-                dbClose($PDO, $PDOStatement);
-/*
-if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	print_r($categoryArray);				
-if(DEBUG_A)	echo "</pre>";
-*/
-
-
 #*************************************************************************#
 
 
@@ -348,39 +293,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
                                 $dbSuccess = "The new category $newCategory has been saved.";
 
-
-                                #************ 3. UPDATE THE CATEGORY SELECTION *************#
-
-                                // Step 2 DB: Create the SQL-Statement and a placeholder-array
-
-                                $sql = 'SELECT catID, catLabel FROM categories';
-
-                                $placeholders = array();
-
-                                // Step 3 DB: Prepared Statements
-
-                                try {
-                                    // Prepare: prepare the SQL-Statement
-                                    $PDOStatement = $PDO -> prepare($sql);
-                                    
-                                    // Execute: execute the SQL-Statement and include the placeholder
-                                    $PDOStatement -> execute($placeholders);
-                                    // showQuery($PDOStatement);
-                                    
-                                } catch(PDOException $error) {
-if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
-                                }
-
-                                // Step 4 DB: evaluate the DB-operation and close the DB connection
-
-                                $categoryArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
-
                                 $newCategory = NULL;
-/*
-if(DEBUG_A)	                    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	                    print_r($categoryArray);					
-if(DEBUG_A)	                    echo "</pre>";
-*/
 
                             } // 2. SAVE THE CATEGORY TO DB END
 
@@ -398,8 +311,62 @@ if(DEBUG_A)	                    echo "</pre>";
 
 
 				#****************************************#
-				#******** PROCESS ARTICLE FORM **********#
+				#****** FETCH CATEGORIES FROM DB ********#
 				#****************************************#
+
+				#****************************************#
+				#************* DB OPERATIONS ************#
+				#****************************************#
+
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch categories for the form... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                // Step 1 DB: Connect to database
+
+                $PDO = dbConnect('blogprojekt');
+
+                #************ FETCH DATA FROM DB *************#
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching category data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                $sql = 'SELECT catID, catLabel FROM categories';
+
+                $placeholders = array();
+
+                // Step 3 DB: Prepared Statements
+
+                try {
+                    // Prepare: prepare the SQL-Statement
+                    $PDOStatement = $PDO -> prepare($sql);
+                    
+                    // Execute: execute the SQL-Statement and include the placeholder
+                    $PDOStatement -> execute($placeholders);
+                    // showQuery($PDOStatement);
+                    
+                } catch(PDOException $error) {
+if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                }
+
+                // Step 4 DB: evaluate the DB-operation and close the DB connection
+
+                $categoryArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
+
+                // close DB connection
+
+                dbClose($PDO, $PDOStatement);
+/*
+if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	print_r($categoryArray);				
+if(DEBUG_A)	echo "</pre>";
+*/
+
+
+#*************************************************************************#
+
+
+				#******************************************#
+				#******** PROCESS BLOG POST FORM **********#
+				#******************************************#
 
                 #******** PREVIEW POST ARRAY ************#
 /*
@@ -565,7 +532,7 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
 
                             } else {
                                 // success
-if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog article has been successfully saved to the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog article has been successfully saved to the database. <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                                 $dbSuccess = 'Your blog article has been published.'; 
 
