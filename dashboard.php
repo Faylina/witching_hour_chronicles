@@ -90,67 +90,18 @@ if(DEBUG)	        echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Login
                     // success
 if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid login. <i>(" . basename(__FILE__) . ")</i></p>\n";
 
+                    #************ GENERATE NEW SESSION ID ***********#
                     session_regenerate_id(true);
 
-                    $userID = $_SESSION['ID'];
+                    $userID         = $_SESSION['ID'];
+                    $userFirstName  = $_SESSION['firstName'];
+                    $userLastName   = $_SESSION['lastName'];
+
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$userID: $userID <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$userFirstName: $userFirstName <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$userLastName: $userLastName <i>(" . basename(__FILE__) . ")</i></p>\n";
                 }         
-                
-
-#*************************************************************************#
-				
-
-				#*****************************************************#
-				#******** FETCH USER DATA FROM DB FOR GREETING *******#
-				#*****************************************************#
-
-                #****************************************#
-				#************ DB OPERATIONS *************#
-				#****************************************#
-
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch user data for the greeting... <i>(" . basename(__FILE__) . ")</i></p>\n";
-
-                // Step 1 DB: Connect to database
-
-                $PDO = dbConnect('blogprojekt');
-
-                #************ FETCH DATA FROM DB *************#
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching user data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
-
-                // Step 2 DB: Create the SQL-Statement and a placeholder-array
-
-                $sql = 'SELECT userFirstName, userLastName FROM users WHERE userID = :userID';
-
-                $placeholders = array('userID' => $userID);
-
-                // Step 3 DB: Prepared Statements
-
-                try {
-                    // Prepare: prepare the SQL-Statement
-                    $PDOStatement = $PDO -> prepare($sql);
-                    
-                    // Execute: execute the SQL-Statement and include the placeholder
-                    $PDOStatement -> execute($placeholders);
-                    // showQuery($PDOStatement);
-                    
-                } catch(PDOException $error) {
-if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
-                }
-
-                // Step 4 DB: evaluate the DB-operation and close the DB connection
-                $dbUserArray = $PDOStatement -> fetch(PDO::FETCH_ASSOC);
-
-                // close DB connection
-                dbClose($PDO, $PDOStatement);
-/*
-if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$dbUserArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	print_r($dbUserArray);					
-if(DEBUG_A)	echo "</pre>";
-*/
-                // create variables for greeting
-
-                $userFirstName  = $dbUserArray['userFirstName'];
-                $userLastName   = $dbUserArray['userLastName'];
-
+            
 
 #*************************************************************************#
 				
@@ -424,9 +375,6 @@ if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ .
 
                                 $categoryArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
 
-                                // close the DB connection
-                                dbClose($PDO, $PDOStatement);
-
                                 $newCategory = NULL;
 /*
 if(DEBUG_A)	                    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
@@ -437,6 +385,9 @@ if(DEBUG_A)	                    echo "</pre>";
                             } // 2. SAVE THE CATEGORY TO DB END
 
                         } // 1. CHECK WHETHER CATEGORY ALREADY EXISTS IN DB END
+
+                        // close the DB connection
+                        dbClose($PDO, $PDOStatement);
 
                     } // FINAL FORM VALIDATION END
 
@@ -616,11 +567,7 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
                                 // success
 if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog article has been successfully saved to the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
 
-                                $dbSuccess = 'Your blog article has been published.';
-
-                                // close DB connection
-
-                                dbClose($PDO,$PDOStatement); 
+                                $dbSuccess = 'Your blog article has been published.'; 
 
                                 // reset form
                                 $category   = NULL;
@@ -628,7 +575,10 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                                 $alignment  = NULL;
                                 $article    = NULL;
 
-                            } // UPLOAD DATA TO DATABASE ENd
+                            } // UPLOAD DATA TO DATABASE END
+
+                            // close the DB connection
+                            dbClose($PDO, $PDOStatement);
 
                         } // FINAL FORM VALIDATION 2 END
 

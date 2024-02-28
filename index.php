@@ -63,7 +63,10 @@ if(DEBUG)	        echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Login
                     // success
 if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid login. <i>(" . basename(__FILE__) . ")</i></p>\n";
 
-                    #************ FLAG AS LOGGED IN ***********#
+                    #************ GENERATE NEW SESSION ID ***********#
+                    session_regenerate_id(true);
+
+                    #************ FLAG AS LOGGED IN *****************#
 
                     $loggedIn = true;
                 }
@@ -140,7 +143,7 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
 
                         // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
-                        $sql = 'SELECT userID, userPassword FROM users WHERE userEmail = :userEmail';
+                        $sql = 'SELECT userID, userFirstName, userLastName, userPassword FROM users WHERE userEmail = :userEmail';
 
                         $placeholders = array('userEmail' => $email);
 
@@ -220,6 +223,8 @@ if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__
                                     #******** SAVE USER DATA INTO SESSION FILE ******#
 
                                     $_SESSION['ID']         = $dbUserArray['userID'];
+                                    $_SESSION['firstName']  = $dbUserArray['userFirstName'];
+                                    $_SESSION['lastName']   = $dbUserArray['userLastName'];
                                     $_SESSION['IPAddress']  = $_SERVER['REMOTE_ADDR'];
 
                                     #******** REDIRECT TO DASHBOARD ******#
