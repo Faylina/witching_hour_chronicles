@@ -16,7 +16,7 @@ body {
     align-items: center;
     width: 100vw;
     overflow-y: auto;
-    overflow-x: auto;
+    overflow-x: hidden;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     letter-spacing: 0.05rem;
 }

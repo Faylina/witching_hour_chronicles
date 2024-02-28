@@ -20,6 +20,7 @@
 
                 $loggedIn   = false;
                 $errorLogin = NULL; 
+                $filterID   = NULL;
 
 #*************************************************************************#
 
@@ -36,10 +37,11 @@
                 #************ START / CONTINUE SESSION ***********#
 
                 session_start();
-
+/*
 if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_SESSION <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	    print_r($_SESSION);					
 if(DEBUG_A)	    echo "</pre>";
+*/
 
                 #****************************************#
 				#******** CHECK FOR VALID LOGIN *********#
@@ -154,10 +156,11 @@ if(DEBUG) 		            echo "<p class='debug db err'><b>Line " . __LINE__ . "</
 
                         // close DB connection
                         dbClose($PDO, $PDOStatement);
-
+/*
 if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$dbUserArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	print_r($dbUserArray);					
 if(DEBUG_A)	echo "</pre>";
+*/
 
                         #************ 1. VALIDATE EMAIL ADDRESS *************#
 if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating the email address... <i>(" . basename(__FILE__) . ")</i></p>\n";
@@ -226,59 +229,6 @@ if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__
 
 #*************************************************************************#
 
-				#*************************************************#
-				#********** FETCH DATA FOR BLOG FROM DB **********#
-				#*************************************************#
-
-                #*************************************************#
-				#***************** DB OPERATION ******************#
-				#*************************************************#
-
-                // Step 1 DB: Connect to database
-
-                $PDO = dbConnect('blogprojekt');
-
-                #************ FETCH DATA FROM DB *************#
-
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching blog data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
-
-                // Step 2 DB: Create the SQL-Statement and a placeholder-array
-
-                $sql = 'SELECT userFirstName, userLastName, userCity, blogHeadline, blogImagePath, blogImageAlignment, blogContent, blogDate, catLabel
-                        FROM blogs 
-                        INNER JOIN users USING(userID)
-                        INNER JOIN categories USING(catID)
-                        ORDER BY blogDate DESC';
-
-                $placeholders = array();
-
-                // Step 3 DB: Prepared Statements
-
-                try {
-                    // Prepare: prepare the SQL-Statement
-                    $PDOStatement = $PDO -> prepare($sql);
-                    
-                    // Execute: execute the SQL-Statement and include the placeholder
-                    $PDOStatement -> execute($placeholders);
-                    // showQuery($PDOStatement);
-                    
-                } catch(PDOException $error) {
-if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
-                }
-
-                // Step 4 DB: evaluate the DB-operation and close the DB connection
-                $blogArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
-
-                // close DB connection
-                dbClose($PDO, $PDOStatement);
-/*
-if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$blogArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	    print_r($blogArray);				
-if(DEBUG_A)	    echo "</pre>";
-*/
-
-#*************************************************************************#
-
 				#*******************************************************#
 				#********** FETCH DATA FOR CATEGORIES FROM DB **********#
 				#*******************************************************#
@@ -328,7 +278,7 @@ if(DEBUG_A)	echo "</pre>";
 #*************************************************************************#
 
                 #***********************************************#
-				#******** PROCESS LOGOUT URL PARAMETERS ********#
+				#******** PROCESS URL PARAMETERS ***************#
 				#***********************************************#
 
                 #******** PREVIEW URL PARAMETERS ***************#
@@ -349,96 +299,120 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The 
                     $action = sanitizeString($_GET['action']);
                     
 if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$action: $action <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    // Step 3 URL: Branching
+                
+                    #*************** LOGOUT **************#
+                    if( $action === 'logout') {
                     
-
-                    #*************** PREPARE FILTERING BY CATEGORY **************#
-
-                    foreach( $categoryArray AS $value ) {
-
-                        // Step 3 URL: Branching
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The user is being logged out... <i>(" . basename(__FILE__) . ")</i></p>\n";
                     
-                        #*************** LOGOUT **************#
-                        if( $action === 'logout') {
-                        
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The user is being logged out... <i>(" . basename(__FILE__) . ")</i></p>\n";
-                        
-                            // Step 4 URL: processing data
-                        
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Processing data... <i>(" . basename(__FILE__) . ")</i></p>\n";
-                        
-                            // 1. Delete session file
-                            session_destroy();
-                        
-                            // 2. Reload homepage
-                            header('LOCATION: index.php');
+                        // Step 4 URL: processing data
+                    
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Processing data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    
+                        // 1. Delete session file
+                        session_destroy();
+                    
+                        // 2. Reload homepage
+                        header('LOCATION: index.php');
 
-                            // 3. Fallback in case of an error: end processing of the script
-                            exit();
+                        // 3. Fallback in case of an error: end processing of the script
+                        exit();
 
-                        #*************** CATEGORIES **************#
-                        } elseif( $action == $value['catID'] ) {
+                    #*************** FILTER **************#
+                    } elseif( $action === 'filterByCategory') {
 
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The blog articles are sorted by category... <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The blog articles are being filtered by category... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
-                            // Step 4 URL: processing data
-                        
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Processing data... <i>(" . basename(__FILE__) . ")</i></p>\n";  
+                        #********* PROCESS CATID PARAMETER ********#
+
+                        // Check whether the parameter has been sent
+
+                        if( isset($_GET['catID']) === true ) {
+if(DEBUG)		            echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The URL-parameter 'catID' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";				
+                            // Read, sanitize and output URL data
+                                        
+if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The URL parameters are being read and sanitized... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                                        
+                            $filterID = sanitizeString($_GET['catID']);
+                                        
+if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$filterID: $filterID <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    
+                        } // PROCESS CATID PARAMETER END
+
+                    } // BRANCHING END 
+
+                } // PROCESS URL PARAMETERS END 
 
 
-                            #****************************************#
-				            #************ DB OPERATIONS *************#
-				            #****************************************#
+#*************************************************************************#
 
-                            // Step 1 DB: Connect to database
+                #*************************************************#
+				#********** FETCH DATA FOR BLOG FROM DB **********#
+				#*************************************************#
 
-                            $PDO = dbConnect('blogprojekt');
+                #*************************************************#
+				#***************** DB OPERATION ******************#
+				#*************************************************#
 
-                            #************ FETCH DATA FROM DB *************#
+                // Step 1 DB: Connect to database
 
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching blog data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                $PDO = dbConnect('blogprojekt');
 
-                            // Step 2 DB: Create the SQL-Statement and a placeholder-array
+                #************ FETCH DATA FROM DB *************#
 
-                            $sql = 'SELECT userFirstName, userLastName, userCity, blogHeadline, blogImagePath, blogImageAlignment, blogContent, blogDate, catLabel
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching blog data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                if( $filterID === NULL ) {
+                    //not filtered - show all blog articles
+                    $sql = 'SELECT userFirstName, userLastName, userCity, blogHeadline, blogImagePath, blogImageAlignment, blogContent, blogDate, catLabel
+                            FROM blogs 
+                            INNER JOIN users USING(userID)
+                            INNER JOIN categories USING(catID)
+                            ORDER BY blogDate DESC';
+
+                    $placeholders = array();
+
+                } else {
+                    // filtered - show only selected blog articles
+
+                    $sql = 'SELECT userFirstName, userLastName, userCity, blogHeadline, blogImagePath, blogImageAlignment, blogContent, blogDate, catLabel
                                     FROM blogs 
                                     INNER JOIN users USING(userID)
                                     INNER JOIN categories USING(catID)
                                     WHERE catID = :catID
                                     ORDER BY blogDate DESC';
 
-                            $placeholders = array('catID' => $value['catID']);
+                    $placeholders = array('catID' => $filterID );
+                }
 
-                            // Step 3 DB: Prepared Statements
+                // Step 3 DB: Prepared Statements
 
-                            try {
-                                // Prepare: prepare the SQL-Statement
-                                $PDOStatement = $PDO -> prepare($sql);
-                                
-                                // Execute: execute the SQL-Statement and include the placeholder
-                                $PDOStatement -> execute($placeholders);
-                                // showQuery($PDOStatement);
-                                
-                            } catch(PDOException $error) {
+                try {
+                    // Prepare: prepare the SQL-Statement
+                    $PDOStatement = $PDO -> prepare($sql);
+                    
+                    // Execute: execute the SQL-Statement and include the placeholder
+                    $PDOStatement -> execute($placeholders);
+                    // showQuery($PDOStatement);
+                    
+                } catch(PDOException $error) {
 if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
-                            }
+                }
 
-                            // Step 4 DB: evaluate the DB-operation and close the DB connection
-                            $blogArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
+                // Step 4 DB: evaluate the DB-operation and close the DB connection
+                $blogArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
 
-                            // close DB connection
-                            dbClose($PDO, $PDOStatement);
+                // close DB connection
+                dbClose($PDO, $PDOStatement);
 /*
-if(DEBUG_A)	                echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$blogArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	                print_r($blogArray);				
-if(DEBUG_A)	                echo "</pre>";
+if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$blogArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	    print_r($blogArray);				
+if(DEBUG_A)	    echo "</pre>";
 */
-                        
-                        } // BRANCHING END 
-
-                    } // PREPARE FILTERING BY CATEGORY END
-
-                } // PROCESS LOGOUT URL PARAMETERS END
-
 
 #*************************************************************************#
 ?>
@@ -533,7 +507,7 @@ if(DEBUG_A)	                echo "</pre>";
         <!-- ------------- CATEGORIES BEGIN ---------------------------- -->
             <div class="categories">
                 <?php foreach( $categoryArray AS $value ): ?>
-                    <a href="?action=<?= $value['catID'] ?>"><?= $value['catLabel'] ?></a>
+                    <a href="?action=filterByCategory&catID=<?= $value['catID'] ?>"><?= $value['catLabel'] ?></a>
                 <?php endforeach ?>
             </div>
         <!-- ------------- CATEGORIES END ------------------------------ -->
