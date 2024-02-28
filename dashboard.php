@@ -11,8 +11,8 @@
                 require_once('./include/db.inc.php');
 
 #*************************************************************************#
-
 				
+
 				#****************************************#
 				#********* INITIALIZE VARIABLES *********#
 				#****************************************#
@@ -22,7 +22,7 @@
                 $userLastName       = NULL;
 
                 #********* CATEGORY VARIABLES ***********#
-                $newCategory           = NULL;
+                $newCategory        = NULL;
 
                 #********* ARTICLE VARIABLES ************#
                 $category           = NULL;
@@ -43,6 +43,7 @@
 
                 $allowedMIMETypes   = implode(', ', array_keys(IMAGE_ALLOWED_MIME_TYPES));
                 $mimeTypes          = strtoupper( str_replace( array('image/jpeg, ', 'image/'), '', $allowedMIMETypes));
+
 
 #*************************************************************************#
 
@@ -94,8 +95,10 @@ if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid 
                     $userID = $_SESSION['ID'];
                 }         
                 
+
 #*************************************************************************#
 				
+
 				#*****************************************************#
 				#******** FETCH USER DATA FROM DB FOR GREETING *******#
 				#*****************************************************#
@@ -103,6 +106,7 @@ if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid 
                 #****************************************#
 				#************ DB OPERATIONS *************#
 				#****************************************#
+
 if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch user data for the greeting... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                 // Step 1 DB: Connect to database
@@ -118,7 +122,7 @@ if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching
 
                 $placeholders = array('userID' => $userID);
 
-                // Step 3 DB: Prepared Statement
+                // Step 3 DB: Prepared Statements
 
                 try {
                     // Prepare: prepare the SQL-Statement
@@ -142,15 +146,15 @@ if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$dbUse
 if(DEBUG_A)	print_r($dbUserArray);					
 if(DEBUG_A)	echo "</pre>";
 */
-
-
                 // create variables for greeting
 
                 $userFirstName  = $dbUserArray['userFirstName'];
                 $userLastName   = $dbUserArray['userLastName'];
 
+
 #*************************************************************************#
 				
+
 				#***************************************************#
 				#******** PROCESS URL PARAMETERS FOR LOGOUT ********#
 				#***************************************************#
@@ -161,8 +165,6 @@ if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_
 if(DEBUG_A)	    print_r($_GET);					
 if(DEBUG_A)	    echo "</pre>";
 */
-
-
                 // Step 1 URL: Check whether the parameters have been sent
 
                 if( isset($_GET['action']) === true ) {
@@ -170,7 +172,7 @@ if(DEBUG)		    echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The URL
                     // Step 2 URL: Read, sanitize and output URL data
                     
 if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The URL parameters are being read and sanitized... <i>(" . basename(__FILE__) . ")</i></p>\n";
-                    
+    
                     $action = sanitizeString($_GET['action']);
                     
 if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$action: $action <i>(" . basename(__FILE__) . ")</i></p>\n";
@@ -203,16 +205,18 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
 
 #*************************************************************************#
 
+
 				#****************************************#
 				#****** FETCH CATEGORIES FROM DB ********#
 				#****************************************#
 
 				#****************************************#
-				#************* DB OPERATION *************#
+				#************* DB OPERATIONS ************#
 				#****************************************#
+
 if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch categories for the form... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
-                //// Step 1 DB: Connect to database
+                // Step 1 DB: Connect to database
 
                 $PDO = dbConnect('blogprojekt');
 
@@ -240,9 +244,11 @@ if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERRO
                 }
 
                 // Step 4 DB: evaluate the DB-operation and close the DB connection
+
                 $categoryArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
 
                 // close DB connection
+
                 dbClose($PDO, $PDOStatement);
 /*
 if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
@@ -252,6 +258,7 @@ if(DEBUG_A)	echo "</pre>";
 
 
 #*************************************************************************#
+
 
 				#****************************************#
 				#******** PROCESS CATEGORY FORM *********#
@@ -283,7 +290,7 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Vali
 
                     $errorCategory = validateInputString( $newCategory, minLength:1, maxLength:20 );
 
-                    // Final form validation
+                    // FINAL FORM VALIDATION
 
                     if( $errorCategory !== NULL ) {
                         // error
@@ -381,6 +388,7 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
 
                                 $dbError = 'The category could not be saved. Please try again later.'
                                 ;
+
                                 // TODO: Log to error log
 
                             } else {
@@ -388,6 +396,7 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
 if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount category was saved to the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
 
                                 $dbSuccess = "The new category $newCategory has been saved.";
+
 
                                 #************ 3. UPDATE THE CATEGORY SELECTION *************#
 
@@ -401,10 +410,10 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
                                 try {
                                     // Prepare: prepare the SQL-Statement
-                                    $PDOStatement = $PDO->prepare($sql);
+                                    $PDOStatement = $PDO -> prepare($sql);
                                     
                                     // Execute: execute the SQL-Statement and include the placeholder
-                                    $PDOStatement->execute($placeholders);
+                                    $PDOStatement -> execute($placeholders);
                                     // showQuery($PDOStatement);
                                     
                                 } catch(PDOException $error) {
@@ -425,16 +434,17 @@ if(DEBUG_A)	                    print_r($categoryArray);
 if(DEBUG_A)	                    echo "</pre>";
 */
 
-                            } //2. SAVE THE CATEGORY TO DB
+                            } // 2. SAVE THE CATEGORY TO DB END
 
-                        } // 1. CHECK WHETHER CATEGORY ALREADY EXISTS IN DB
+                        } // 1. CHECK WHETHER CATEGORY ALREADY EXISTS IN DB END
 
-                    } // FINAL FORM VALIDATION
+                    } // FINAL FORM VALIDATION END
 
                 } // PROCESS CATEGORY FORM END
 
 
 #*************************************************************************#
+
 
 				#****************************************#
 				#******** PROCESS ARTICLE FORM **********#
@@ -446,7 +456,6 @@ if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_
 if(DEBUG_A)	    print_r($_POST);					
 if(DEBUG_A)	    echo "</pre>";
 */
-
 
                 // Step 1 FORM: Check whether the form has been sent
 
@@ -532,7 +541,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
                                 $imagePath = $validatedImageArray['imagePath'];
 
-                            } // VALIDATE IMAGE UPLOAD
+                            } // VALIDATE IMAGE UPLOAD END
 
                         } // IMAGE UPLOAD END
 
@@ -549,11 +558,13 @@ if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>
 
                             // Step 4 FORM: data processing
 if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The form data is being further processed... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
                             #**************** UPLOAD DATA TO DATABASE *****************#
+
 if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Uploading form data to database... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                             #****************************************#
-				            #************ DB OPERATION **************#
+				            #************ DB OPERATIONS *************#
 				            #****************************************#
 
                             // Step 1 DB: Connect to database
@@ -607,14 +618,17 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
                                 $dbSuccess = 'Your blog article has been published.';
 
+                                // close DB connection
+
                                 dbClose($PDO,$PDOStatement); 
 
+                                // reset form
                                 $category   = NULL;
                                 $title      = NULL;
                                 $alignment  = NULL;
                                 $article    = NULL;
 
-                            } // UPLOAD DATA TO DATABASE
+                            } // UPLOAD DATA TO DATABASE ENd
 
                         } // FINAL FORM VALIDATION 2 END
 
@@ -627,6 +641,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
 <!DOCTYPE html>
 <html lang="de">
+
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -636,22 +651,26 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
         <link rel="stylesheet" href="./css/main.css">
 		<link rel="stylesheet" href="./css/debug.css">
     </head>
+
     <body>
 
         <!-- ------------- NAVIGATION BEGIN --------------------------- -->
+
         <nav class="navigation">
 
             <!-- ------------- NAV LINKS BEGIN ---------------------------- -->
-                <a class="link" href="./index.php"><< Homepage</a>
-                <a class="link" href="?action=logout">Logout >></a>
+
+            <a class="link" href="./index.php"><< Homepage</a>
+            <a class="link" href="?action=logout">Logout >></a>
 
             <!-- ------------- NAV LINKS END ------------------------------ -->
 
         </nav>
-    <!-- ------------- NAVIGATION END ----------------------------- -->
+
+        <!-- ------------- NAVIGATION END ----------------------------- -->
 
 
-    <!-- ------------- HEADER BEGIN ------------------------------- -->
+        <!-- ------------- HEADER BEGIN ------------------------------- -->
         <header>
 
             <img class="logo" src="./css/images/logo.png" alt="Parchment paper with a teal quill, a full moon in the background">
@@ -661,37 +680,42 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
             </div>
 
         </header>
-    <!-- ------------- HEADER END ---------------------------------- -->
+        <!-- ------------- HEADER END ---------------------------------- -->
 
 
-    <!-- ------------- USER MESSAGE BEGIN ---------------------------------- -->
+        <!-- ------------- USER MESSAGE BEGIN ---------------------------------- -->
 
         <?php if( $dbError !== NULL OR $dbSuccess !== NULL ): ?>
             <popupBox>
+                <!-- Message -->
                 <?php if( $dbError ):?>
                     <h3 class="popup-error"><?= $dbError ?></h3>
                 <?php elseif( $dbSuccess ): ?>
                     <h3 class="popup-success"><?= $dbSuccess ?></h3>
                 <?php endif ?>
 
+                <!-- Button -->
                 <?php if( $dbError OR $dbSuccess ): ?>
                     <a class="button" onclick="document.getElementsByTagName('popupBox')[0].style.display = 'none'">Okay</a>
                 <?php endif ?>
             </popupBox> 
         <?php endif ?>
 
-    <!-- ------------- USER MESSAGE END ------------------------------------ -->
+        <!-- ------------- USER MESSAGE END ------------------------------------ -->
 
+
+        <!-- ------------- MAIN CONTENT BEGIN ---------------------------------- -->
 
         <div class="forms">
 
-            <!-- ------------- ARTICLE FORM BEGIN ------------------------- -->
+            <!-- ------------- BLOG POST FORM BEGIN ------------------------- -->
 
             <form class="article-form" action="" method="POST" enctype="multipart/form-data">
                 <div class="form-heading">Write a new blog article</div>
                 <br>
                 <input type="hidden" name="articleForm">
 
+                <!-- security by obscurity: field names are deliberately chosen to be obscure -->
 
                 <!-- ------------- Category ------------- -->
                 <label for="b1">Choose a category</label>
@@ -713,6 +737,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                 <!-- ------------- Image Upload ---------- -->
                 <fieldset>
                     <legend>Upload an image</legend>
+
                     <!-- ------------- Image Info Text ---------- -->
                     <p class="image-info">
                         You may upload an image of the type <?= $mimeTypes ?>. <br>
@@ -721,10 +746,12 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                         The size of the file may not exceed <?= IMAGE_MAX_SIZE/1024/1000 ?> MB.
                     </p>
                     <br>
+                    <!-- ------------- Image Upload ---------- -->
                     <div class="error"><?= $errorImage ?></div>
                     <input type="file" name="image">
                     <br>
                     <br>
+                    <!-- ------------- Image Alignment ---------- -->
                     <label for="b3">Choose the alignment of the image</label>
                     <br>
                     <select name="b3" id="b3" class="form-select">
@@ -735,15 +762,15 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                 </fieldset>
                 <br>
 
-                <!-- ------------- Article ------------------ -->
-                <label for="b4">Write your article</label>
+                <!-- ------------- Content ------------------ -->
+                <label for="b4">Write your blog post</label>
                 <div class="error"><?= $errorArticle ?></div>
                 <textarea name="b4" id="b4" class="textarea" cols="30" rows="25"><?= $article ?></textarea>
                 <br>
                 <input type="submit" class="form-button" value="Publish">
             </form>
                 
-            <!-- ------------- ARTICLE FORM END ---------------------------- -->
+            <!-- ------------- BLOG POST FORM END ---------------------------- -->
 
 
             <!-- ------------- CATEGORY FORM BEGIN ------------------------- -->
@@ -759,13 +786,16 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                 <input type="text" class="form-text" name="b5" id="b5" placeholder="Category name" value="<?= $newCategory ?>">
                 <br>
                 <input type="submit" class="form-button" value="Create category">
+
             </form>
 
             <!-- ------------- CATEGORY FORM END --------------------------- -->
             
-        </div>         
+        </div>     
+        
+        <!-- ------------- MAIN CONTENT END ---------------------------------- -->
 
-    <!-- ------------- FOOTER BEGIN -------------------------------- -->
+        <!-- ------------- FOOTER BEGIN -------------------------------- -->
         <footer>
             <div class="footer-container">
                 <ul>
@@ -775,7 +805,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                 </ul>
             </div>
         </footer>
-    <!-- ------------- FOOTER END ---------------------------------- -->
+        <!-- ------------- FOOTER END ---------------------------------- -->
     
     </body>
 </html>

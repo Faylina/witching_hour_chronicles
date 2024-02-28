@@ -1,3 +1,9 @@
+/*******************************/
+/********** MAIN CSS ***********/
+/*******************************/
+
+/********** GLOBAL *************/
+
 * {
     margin: 0;
     padding: 0;
@@ -21,7 +27,8 @@ body {
     letter-spacing: 0.05rem;
 }
 
-/*  -------- NAVIGATION --------- */
+
+/********** NAVIGATION ***********/
 
 .navigation {
     height: 85px;
@@ -68,7 +75,8 @@ fieldset {
     color: #4e93ac;
 }
 
-/*  -------- HEADER --------- */
+
+/********** HEADER ***********/
 
 header {
     display: flex;
@@ -108,7 +116,7 @@ h1 {
 }
 
 
-/*  -------- FORMS --------- */
+/********** FORMS DASHBOARD ***********/
 
 .forms, .content {
     display: flex;
@@ -176,7 +184,8 @@ h1 {
     letter-spacing: 0.05rem;
 }
 
-/*  -------- BLOG --------- */
+
+/********** BLOG HOMEPAGE ***********/
 
 .blog {
     width: 43%;
@@ -214,7 +223,8 @@ h1 {
     line-height: 1.5rem;
 }
 
-/*  -------- BLOG IMAGE --------- */
+
+/********** BLOG IMAGE HOMEPAGE ***********/
 
 .right, .left {
     width: 31%;
@@ -231,7 +241,8 @@ h1 {
     margin: 15px 25px 15px 15px;
 }
 
-/*  -------- CATEGORIES --------- */
+
+/********** CATEGORIES HOMEPAGE ***********/
 
 .categories {
     width: 230px;
@@ -255,7 +266,7 @@ h1 {
 }
 
 
-/*  -------- USER MESSAGES --------- */
+/********** USER MESSAGES ***********/
 
 .error {
     color: rgb(237, 105, 105);
@@ -281,7 +292,8 @@ h1 {
     margin: 1.5rem;
 }
 
-/*  -------- FOOTER --------- */
+
+/********** FOOTER ***********/
 
 footer {
     height: 65px;
@@ -312,7 +324,7 @@ footer {
 }
 
 
-/*  -------- SPECIAL POPUP MESSAGES STYLES --------- */
+/********** SPECIAL POPUP MESSAGES STYLES ***********/
 
 popupBox {
 	border: 1px solid #4e93ac;
