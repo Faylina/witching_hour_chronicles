@@ -55,6 +55,10 @@ if(DEBUG)	        echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Login
 
                     session_destroy();
 
+                    #************ FLAG AS LOGGED OUT *********#
+
+                    $loggedIn = false;
+
                 } else {
                     // success
 if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid login. <i>(" . basename(__FILE__) . ")</i></p>\n";
