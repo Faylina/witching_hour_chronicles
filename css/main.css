@@ -100,7 +100,7 @@ h1 {
     color: white;
     text-decoration: none;
     margin: 5px;
-    width: 30%;
+    width: 190px;
 }
 
 .title a:hover {
@@ -115,6 +115,7 @@ h1 {
     width: 90%;
     flex-wrap: wrap;
     margin-top: 20px;
+    align-items: flex-start;
 }
 
 .article-form, .category-form, .blog, .categories {
@@ -135,8 +136,8 @@ h1 {
 }
 
 .category-form {
-    width: 28%;
-    flex: 1 0 250px;
+    width: 350px;
+    flex: initial;
 }
 
 .form-heading {
@@ -213,8 +214,10 @@ h1 {
     line-height: 1.5rem;
 }
 
+/*  -------- BLOG IMAGE --------- */
+
 .right, .left {
-    width: 25%;
+    width: 31%;
     float: right;
 }
 
@@ -231,14 +234,14 @@ h1 {
 /*  -------- CATEGORIES --------- */
 
 .categories {
-    width: 150px;
+    width: 230px;
     flex: initial;
     display: flex;
     flex-direction: column;
     gap: 20px;
     align-items: center;
-    padding: 30px 10px;
-    font-size: 1.2rem;
+    padding: 52px 10px;
+    font-size: 1.2rem;    
 }
 
 .categories a {
@@ -299,6 +302,7 @@ footer {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding-left: 10px;
 }
 
 .footer-container ul {

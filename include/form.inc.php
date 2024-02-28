@@ -395,7 +395,7 @@ if(DEBUG_F)			echo "<p class='debug validateImageUpload'><b>Line " . __LINE__ . 
 					#********** VALIDATE FILE SIZE **********#
 					if( $fileSize > $imageMaxSize ) {
 						// 5. error (not permitted file size)
-						return array('imagePath' => NULL, 'imageError' => 'The maximum file size may be ' . $imageMaxSize/1024 . 'pixels!');
+						return array('imagePath' => NULL, 'imageError' => 'The maximum file size may be ' . $imageMaxSize/1024/1000 . 'MB!');
 					
 					} // 2. IMAGE VALIDATION END
 					#*************************************************************#

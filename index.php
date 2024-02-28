@@ -107,7 +107,7 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Vali
 
                     if( $errorEmail !== NULL OR $errorPassword !== NULL ) {
                         // error
-if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The login form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
 
                         $errorLogin = 'Invalid email or password.';
 
@@ -236,6 +236,7 @@ if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__
                 #****************************************#
 				#************* DB OPERATION *************#
 				#****************************************#
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch categories... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                 //// Step 1 DB: Connect to database
 
@@ -355,6 +356,7 @@ if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . 
                 #*************************************************#
 				#***************** DB OPERATION ******************#
 				#*************************************************#
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch blog article data... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                 // Step 1 DB: Connect to database
 
@@ -506,6 +508,7 @@ if(DEBUG_A)	    echo "</pre>";
 
         <!-- ------------- CATEGORIES BEGIN ---------------------------- -->
             <div class="categories">
+                <div class="blog-title">Categories</div>
                 <?php foreach( $categoryArray AS $value ): ?>
                     <a href="?action=filterByCategory&catID=<?= $value['catID'] ?>"><?= $value['catLabel'] ?></a>
                 <?php endforeach ?>

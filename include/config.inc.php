@@ -22,10 +22,10 @@
 				
 				
 				#********** IMAGE UPLOAD CONFIGURATION *****************************#
-				define('IMAGE_MAX_WIDTH',					800);
-				define('IMAGE_MAX_HEIGHT',					800);
+				define('IMAGE_MAX_WIDTH',					1025);
+				define('IMAGE_MAX_HEIGHT',					1025);
 				define('IMAGE_MIN_SIZE',					1024);
-				define('IMAGE_MAX_SIZE',					128*1024);
+				define('IMAGE_MAX_SIZE',					2500*1024);
 				define('IMAGE_ALLOWED_MIME_TYPES',			array('image/jpeg'=>'.jpg', 'image/jpg'=>'.jpg', 'image/gif'=>'.gif', 'image/png'=>'.png'));
 				
 				

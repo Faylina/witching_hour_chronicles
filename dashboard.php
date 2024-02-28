@@ -103,6 +103,7 @@ if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid 
                 #****************************************#
 				#************ DB OPERATIONS *************#
 				#****************************************#
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch user data for the greeting... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                 // Step 1 DB: Connect to database
 
@@ -209,6 +210,7 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
 				#****************************************#
 				#************* DB OPERATION *************#
 				#****************************************#
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch categories for the form... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                 //// Step 1 DB: Connect to database
 
@@ -279,7 +281,7 @@ if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \
 
 if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating fields... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
-                    $errorCategory = validateInputString( $newCategory );
+                    $errorCategory = validateInputString( $newCategory, minLength:1, maxLength:20 );
 
                     // Final form validation
 
@@ -335,7 +337,7 @@ if(DEBUG_V)	            echo "<p class='debug value'><b>Line " . __LINE__ . "</b
 
                         if( $count !== 0 ) {
                             // error
-if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The catefory already exists in the database! <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The category already exists in the database! <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                             $errorCategory = 'This category already exists.';
 
@@ -469,11 +471,11 @@ if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \
 
 if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating fields... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
-                    $errorCategory  = validateInputString( $category );
-                    $errorTitle     = validateInputString( $title );
+                    $errorCategory  = validateInputString( $category, minLength:1, maxLength:20 );
+                    $errorTitle     = validateInputString( $title, minLength:1 );
                     // $alignment is not mandatory but should return a value either way. It would indicate an error should it return empty.
                     $errorAlignment = validateInputString( $alignment, minLength:4, maxLength:5 );
-                    $errorArticle   = validateInputString( $article, maxLength:10000 );
+                    $errorArticle   = validateInputString( $article, minLength:1, maxLength:10000 );
 
                     #**************** FINAL FORM VALIDATION 1 *****************#
 
@@ -716,7 +718,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                         You may upload an image of the type <?= $mimeTypes ?>. <br>
                         The width of the image may not exceed <?= IMAGE_MAX_WIDTH ?> pixels. <br>
                         The height of the image may not exceed <?= IMAGE_MAX_HEIGHT ?> pixels. <br>
-                        The size of the file may not exceed <?= IMAGE_MAX_SIZE/1024 ?> kB.
+                        The size of the file may not exceed <?= IMAGE_MAX_SIZE/1024/1000 ?> MB.
                     </p>
                     <br>
                     <div class="error"><?= $errorImage ?></div>
@@ -729,6 +731,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                         <option value="left" <?php if( $alignment === 'left') echo 'selected' ?>>Left</option>
                         <option value="right" <?php if( $alignment === 'right') echo 'selected' ?>>Right</option>
                     </select>
+                    <br>
                 </fieldset>
                 <br>
 
