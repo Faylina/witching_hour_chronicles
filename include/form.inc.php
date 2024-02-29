@@ -23,31 +23,22 @@
 if(DEBUG_F)		echo "<p class='debug sanitizeString'>🌀 <b>Line " . __LINE__ . "</b>: Invoking " . __FUNCTION__ . "('$value') <i>(" . basename(__FILE__) . ")</i></p>\n";
 					
 					/*
-						Da in PHP künftig kein Aufruf der PHP-eigenen Funktionen
-						mit NULL-Werten erlaubt ist, rufen wir die PHP-Funktionen
-						nur auf, wenn $value NICHT NULL ist.
-						Für DB-Operationen soll NULL nicht mit Leersteings überschrieben
-						werden. Daher wird an dieser Stelle ein Leerstring durch NULL ersetzt.
+						Since in PHP no call to PHP's own functions with NULL values will be allowed in the future, we only call the PHP functions if $value is NOT NULL. For DB operations, NULL should not be overwritten with an empty string. Therefore, at this point, an empty string is replaced by NULL.
 					*/
 					if( $value !== NULL ) {
 						
 						/*
-							SCHUTZ GEGEN EINSCHLEUSUNG UNERWÜNSCHTEN CODES:
-							Damit so etwas nicht passiert: <script>alert("HACK!")</script>
-							muss der empfangene String ZWINGEND entschärft werden!
-							htmlspecialchars() wandelt potentiell gefährliche Steuerzeichen wie
-							< > " & in HTML-Code um (&lt; &gt; &quot; &amp;).
+
+							PROTECTION AGAINST INJECTION OF UNAUTHORIZED CODES: To prevent such incidents: <script>alert("HACK!")</script> the received string MUST be escaped! The htmlspecialchars() function converts potentially dangerous characters like < > " & into HTML code (&lt; &gt; &quot; &amp;).
+
+							The parameter ENT_QUOTES additionally converts simple ' into &apos;. The parameter ENT_HTML5 ensures that the generated HTML code is HTML5-compliant. 
 							
-							Der Parameter ENT_QUOTES wandelt zusätzlich einfache ' in &apos; um.
-							Der Parameter ENT_HTML5 sorgt dafür, dass der generierte HTML-Code HTML5-konform ist.
+							The 1st optional parameter controls the underlying character encoding (NULL = character encoding is taken over by the web server). 
 							
-							Der 1. optionale Parameter regelt die zugrundeliegende Zeichencodierung 
-							(NULL=Zeichencodierung wird vom Webserver übernommen)
+							The 2nd optional parameter determines the character encoding. 
 							
-							Der 2. optionale Parameter bestimmt die Zeichenkodierung
-							
-							Der 3. optionale Parameter regelt, ob bereits vorhandene HTML-Entities erneut entschärft werden
-							(false=keine doppelte Entschärfung)
+							The 3rd optional parameter controls whether existing HTML entities are escaped again (false = no double escaping).
+
 						*/
 						$value = htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, double_encode:false);
 						
@@ -55,12 +46,9 @@ if(DEBUG_F)		echo "<p class='debug sanitizeString'>🌀 <b>Line " . __LINE__ . "
 					}
 					
 					/*
-						Ein von vornherein übergebener Leerstring sollte an dieser Stelle in NULL
-						umgewandelt werden, damit es keine Probleme mit leeren Datenbankfeldern (NULL) gibt, die
-						ansonsten durch Leerstrings überschrieben würden.
+						A blank string passed from the start should be converted to NULL at this point to avoid issues with empty database fields (NULL) that would otherwise be overwritten by blank strings. 
 						
-						Sollte $value ausschließlich Whitespaces beinhalten, liefert trim() an dieser
-						Stelle einen Leerstring zurück. Dieser Leerstring muss wieder in NULL umgewandelt werden.
+						If $value contains only whitespaces, trim() will return a blank string at this point. This blank string must be converted back to NULL.
 					*/
 					if( $value === '' ) {
 						$value = NULL;
@@ -99,9 +87,7 @@ if(DEBUG_F)		echo "<p class='debug validateInputString'>🌀 <b>Line " . __LINE_
 					
 					#********** MANDATORY CHECK **********#
 					/*
-						Da ein zu prüfender String nicht zwangsläufig aus einem Formular,
-						sondern beispielsweise auch aus einem JSON-Objekt stammen könnte, sollten
-						hier auch NULL-Werte mit geprüft werden.
+						Since a string to be checked may not necessarily come from a form but also from a JSON object, NULL values need to be checked here as well.
 					*/
 					if( $mandatory === true AND ($value === '' OR $value === NULL) ) {
 						// error
@@ -110,24 +96,13 @@ if(DEBUG_F)		echo "<p class='debug validateInputString'>🌀 <b>Line " . __LINE_
 					
 					#********** MAXIMUM LENGTH CHECK **********#
 					/*
-						Da die Felder in der Datenbank oftmals eine Längenbegrenzung besitzen,
-						die Datenbank aber bei Überschreiten dieser Grenze keine Fehlermeldung
-						ausgibt, sondern alles, das über diese Grenze hinausgeht, stillschweigend 
-						abschneidet, muss vorher eine Prüfung auf diese Maximallänge durchgeführt 
-						werden. Nur so kann dem User auch eine entsprechende Fehlermeldung ausgegeben
-						werden.
+						Since database fields often have a length limit, but the database does not give an error message when this limit is exceeded, it silently cuts off anything that goes beyond this limit. Therefore, a check for this maximum length must be performed beforehand. This is the only way to provide the user with an appropriate error message.
 					*/
 					/*
-						mb_strlen() erwartet als Datentyp einen String. Wenn (später bei der OOP)
-						jedoch ein anderer Datentyp wie Integer oder Float übergeben wird, wirft
-						mb_strlen() einen Fehler. Da es ohnehin keinen Sinn macht, einen Zahlenwert
-						auf seine Länge (Anzahl der Zeichen) zu prüfen, wird diese Prüfung nur für
-						den Datentyp 'String' durchgeführt.
+						mb_strlen() expects a string as data type. However, if a different data type such as integer or float is passed (later during OOP), mb_strlen() throws an error. It makes no sense to check the length of a number value. Therefore, this check is only performed for the 'String' data type.
 					*/
 					/*
-						Da die Übergabe von NULL an PHP-eigene Funktionen in künftigen PHP-Versionen 
-						nicht mehr erlaubt ist, muss vor jedem Aufruf einer PHP-Funktion sichergestellt 
-						werden, dass der zu übergebende Wert nicht NULL ist.
+						Since passing NULL to PHP-native functions will no longer be allowed in future PHP versions, it must be ensured before every call to a PHP function that the value to be passed is not NULL.
 					*/
 					} elseif( $value !== NULL AND mb_strlen($value) > $maxLength ) {
 						// error
@@ -136,27 +111,13 @@ if(DEBUG_F)		echo "<p class='debug validateInputString'>🌀 <b>Line " . __LINE_
 						
 					#********** MINIMUM LENGTH CHECK **********#
 					/*
-						Es gibt Sonderfälle, bei denen eine Mindestlänge für einen Userinput
-						vorgegeben ist, beispielsweise bei der Erstellung von Passwörtern.
-						Damit nicht-Pflichtfelder aber auch weiterhin leer sein dürfen, muss
-						die Mindestlänge als Standardwert mit 0 vorbelegt sein.
-						
-						Bei einem optionalen Feldwert, der gleichzeitig eine Mindestlänge
-						einhalten muss, darf die Prüfung keine Leerstrings validieren, da 
-						diese nie die Mindestlänge erfüllen und somit der Wert nicht mehr 
-						optional wäre.
+						In special cases, there are minimum length requirements for user input, such as when creating passwords. To allow non-required fields to remain empty, the minimum length must be pre-set as a default value of 0. For an optional field value that also must meet a minimum length requirement, the validation should not validate blank strings, as they never meet the minimum length and therefore the value would no longer be optional.
 					*/
 					/*
-						mb_strlen() erwartet als Datentyp einen String. Wenn (später bei der OOP)
-						jedoch ein anderer Datentyp wie Integer oder Float übergeben wird, wirft
-						mb_strlen() einen Fehler. Da es ohnehin keinen Sinn macht, einen Zahlenwert
-						auf seine Länge (Anzahl der Zeichen) zu prüfen, wird diese Prüfung nur für
-						den Datentyp 'String' durchgeführt.
+						mb_strlen() expects a string as data type. However, if a different data type such as integer or float is passed (later during OOP), mb_strlen() throws an error. It makes no sense to check the length of a number value. Therefore, this check is only performed for the 'String' data type.
 					*/
 					/*
-						Da die Übergabe von NULL an PHP-eigene Funktionen in künftigen PHP-Versionen 
-						nicht mehr erlaubt ist, muss vor jedem Aufruf einer PHP-Funktion sichergestellt 
-						werden, dass der zu übergebende Wert nicht NULL ist.
+						Since passing NULL to PHP-native functions will no longer be allowed in future PHP versions, it must be ensured before every call to a PHP function that the value to be passed is not NULL.
 					*/
 					} elseif( $value !== NULL AND mb_strlen($value) < $minLength ) {
 						// error
@@ -194,9 +155,7 @@ if(DEBUG_F)		echo "<p class='debug validateEmail'>🌀 <b>Line " . __LINE__ . "<
 					
 					#********** MANDATORY CHECK **********#
 					/*
-						Da ein zu prüfender String nicht zwangsläufig aus einem Formular,
-						sondern beispielsweise auch aus einem JSON-Objekt stammen könnte, sollten
-						hier auch NULL-Werte mit geprüft werden.
+						Since a string to be checked may not necessarily come from a form but also from a JSON object, NULL values need to be checked here as well.
 					*/
 					if( $mandatory === true AND ($value === '' OR $value === NULL) ) {
 						// error
@@ -205,9 +164,7 @@ if(DEBUG_F)		echo "<p class='debug validateEmail'>🌀 <b>Line " . __LINE__ . "<
 					
 					#********** VALIDATE EMAIL ADDRESS FORMAT **********#
 					/*
-						Da die Übergabe von NULL an PHP-eigene Funktionen in künftigen PHP-Versionen 
-						nicht mehr erlaubt ist, muss vor jedem Aufruf einer PHP-Funktion sichergestellt 
-						werden, dass der zu übergebende Wert nicht NULL ist.
+						Since passing NULL to PHP-native functions will no longer be allowed in future PHP versions, it must be ensured before every call to a PHP function that the value to be passed is not NULL.
 					*/
 					} elseif( $value !== NULL AND $value !== '' AND filter_var($value, FILTER_VALIDATE_EMAIL) === false ) {
 						// error
@@ -266,40 +223,31 @@ if(DEBUG_F)		echo "<p class='debug validateImageUpload'>🌀 <b>Line " . __LINE_
 					/*
 						FILE HEADER
 						
-						Die Informationen, die immer in jedem Bildheader oder Dateiheader eines Bildes vorhanden sind, können 
-						je nach dem spezifischen Bildformat variieren. Es gibt jedoch einige grundlegende Informationen, die in 
-						den meisten gängigen Bildformaten vorkommen und als Pflichtangaben angesehen werden. 
-						Zu den typischen Pflichtangaben gehören:
+						The information that is always present in every image header or file header of an image may vary depending on the specific image format. However, there are some basic information that is present in most common image formats and are considered mandatory. Some of the typical mandatory information include:
 
-						- Dateisignatur: Jedes Bildformat hat eine eindeutige Dateisignatur, die am Anfang der Datei steht und 
-						  auf das Format hinweist. Die Dateisignatur ist entscheidend, um das Dateiformat zu identifizieren.
+						- File signature: Every image format has a unique file signature that is located at the beginning of the file and indicates the format. The file signature is crucial for identifying the file format.
 
-						- Dateigröße: Die Größe der Bilddatei in Bytes oder Kilobytes ist in den meisten Dateiheadern enthalten. 
-						  Dies ist wichtig für die Speicherplatzverwaltung und das Einlesen der Datei.
+						- File size: The size of the image file in bytes or kilobytes is included in most file headers. This is important for storage management and file reading.
 
-						- Bildabmessungen: Informationen über die Breite und Höhe des Bildes in Pixeln sind entscheidend, um die 
-						  richtige Darstellung des Bildes zu gewährleisten. Diese Informationen sind nahezu immer im Dateiheader vorhanden.
+						- Image dimensions: Information about the width and height of the image in pixels is critical to ensure the proper display of the image. These informations are almost always present in the file header.
 
-						- Farbtiefe: Die Farbtiefe gibt an, wie viele Farben pro Pixel im Bild dargestellt werden können. 
-						  Bei RGB-Bildern beträgt die übliche Farbtiefe 24 Bit (8 Bit pro Kanal), was 16,7 Millionen Farben entspricht. 
-						  Dies ist eine grundlegende Information im Header.
+						- Color depth: The color depth specifies how many colors per pixel can be displayed in the image. In RGB images, the usual color depth is 24 bits (8 bits per channel), which corresponds to 16.7 million colors. This is a fundamental information in the header.
 											  
-						  Diese Angaben sind in den meisten gängigen Bildformaten zu finden und gelten als grundlegende Pflichtangaben im 
-						  Dateiheader. 
+						  These informations are present in most commonly used image formats and are considered mandatory information in the file header.
 					*/
 					/*
-						Die Funktion getimagesize() liest den Dateiheader einer Bilddatei aus und 
-						liefert bei gültigem MIME Type ('image/...') ein gemischtes Array zurück:
+						The function getimagesize() reads the file header of an image file and returns a mixed array with valid MIME type ('image/...'):
 						
-						[0] 				Bildbreite in PX (Bildabmessungen)
-						[1] 				Bildhöhe in PX  (Bildabmessungen)
-						[3] 				Einen für das HTML <img>-Tag vorbereiteten String (width="480" height="532") 
-						['bits']			Anzahl der Bits pro Kanal (Farbtiefe)
-						['channels']	Anzahl der Farbkanäle (somit auch das Farbmodell: RGB=3, CMYK=4) 
-						['mime'] 		MIME Type
+						[0] 				Image width in pixels (image dimensions) 
+						[1] 				Image height in pixels (image dimensions)
+						[3] 				A string prepared for the HTML <img> tag (width="480" height="532")
+						['bits']			Number of bits per channel (color depth) 
+						['channels']		Number of color channels (thus also the color model: RGB=3, CMYK=4) 
+						['mime'] 			MIME Type
 						
-						Bei ungültigem MIME Type (also nicht 'image/...') liefert getimagesize() false zurück
+						If the MIME Type is invalid (not 'image/...'), getimagesize() returns false.
 					*/
+
 					$imageDataArray = getimagesize($fileTemp);
 
 if(DEBUG_F)		echo "<pre class='debug value validateImageUpload'><b>Line " . __LINE__ . "</b>: \$imageDataArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
@@ -316,22 +264,14 @@ if(DEBUG_F)		echo "</pre>";
 						// success (MIME TYPE IS A VALID IMAGE TYPE)
 						
 						/*
-							SONDERFALL NUMBER (NUMERIC STRINGS):
-							Da wir aus Formularen und anderen Usereingaben alle Werte immer
-							als Datentyp String erhalten, macht eine Prüfung auf einen konkreten
-							numerischen Datentyp in PHP nur selten Sinn.
+							SPECIAL CASE NUMBER (NUMERIC STRINGS): 
+							Since we always receive all values from forms and other user inputs as a string data type, checking for a specific numeric data type in PHP rarely makes sense. 
 							
-							Anstatt mittels is_int() direkt auf den Datentyp Integer zu prüfen,
-							ist es besser, einen empfangenen String auf sein inhaltliches Format 
-							zu prüfen: Ist der String numerisch und entspricht sein Wert einem Integer?
+							Instead of directly checking the Integer data type using is_int(), it's better to check the received string for its content format: Is the string numeric and does its value correspond to an Integer?
 
-							Die Funktion filter_var() kann mittels eines regulären Ausdrucks, der über
-							eine Konstante gesteuert wird, auch einen String auf den Inhalt 'Integer' oder
-							'Float' überprüfen.
+							The function filter_var() can also check a string for the content 'Integer' or 'Float' using a regular expression controlled by a constant.
 
-							Entspricht der mittels filter_var() geprüfte Wert dem zu prüfenden Datenformat,
-							nimmt filter_var automatisch eine Typumwandlung vor und liefert den umgewandelten 
-							Wert zurück.
+							If the value checked by filter_var() matches the data format to be checked, filter_var automatically performs a type conversion and returns the converted value.
 						*/
 						$imageWidth 	= filter_var($imageDataArray[0], FILTER_VALIDATE_INT);
 						$imageHeight 	= filter_var($imageDataArray[1], FILTER_VALIDATE_INT);
@@ -352,24 +292,20 @@ if(DEBUG_F)			echo "<p class='debug validateImageUpload'><b>Line " . __LINE__ . 
 					
 					#********** VALIDATE PLAUSIBILITY OF FILE HEADER **********#
 					/*
-						Diese Prüfung setzt darauf, dass ein maniplulierter Dateiheader nicht konsequent
-						gefälscht wurde:
-						Ein Hacker ändert den MimeType einer Textdatei mit Schadcode aud 'image/jpg', vergisst
-						allerdings, zusätzlich weitere Einträge wie 'imageWidth' oder 'imageHeight' hinzuzufügen.
+						This check relies on the assumption that a manipulated file header was not consistently falsified:
+						A hacker changes the MimeType of a text file with malicious code to 'image/jpg', but forgets to add additional entries like 'imageWidth' or 'imageHeight'.
 						
-						Da wir den Datentyp eines im Dateiheader fehlenden Wertes nicht kennen (NULL, '', 0), 
-						wird an dieser Stelle ausdrücklich nicht typsicher, sondern auf 'falsy' geprüft.
-						Ein ! ('NOT') vor einem Wert oder einer Funktion negiert die Auswertung: Die Bedingung 
-						ist erfüllt, wenn die Auswertung false ergibt.
+						Since we do not know the data type of a missing value in the file header (NULL, '', 0), we explicitly do not check for type safety here, but rather check for 'falsy'. 
+						A ! ('NOT') before a value or function negates the evaluation: The condition is met when the evaluation results in false.
 					*/
 					if( !$imageWidth OR !$imageHeight OR !$imageMimeType OR $fileSize < $imageMinSize ) {
-						// 1. Fehlerfall (verdächtiger Datei Header)
+						// 1. error (suspicious file header)
 						return array('imagePath' => NULL, 'imageError' => 'Suspicious file header!');
 					}
 					
 				
 					#********** VALIDATE IMAGE MIME TYPE **********#
-					// Whitelist mit erlaubten MIME TYPES
+					// Whitelist with allowed MIME TYPES
 					// $imageAllowedMimeTypes = array('image/jpg' => '.jpg', 'image/jpeg' => '.jpg', 'image/png' => '.png', 'image/gif' => '.gif');
 					
 					if( array_key_exists($imageMimeType, $imageAllowedMimeTypes) === false ) {
@@ -407,22 +343,16 @@ if(DEBUG_F)			echo "<p class='debug validateImageUpload'><b>Line " . __LINE__ . 
 					
 					#********** GENERATE UNIQUE FILE NAME **********#
 					/*
-						Da der Dateiname selbst Schadcode in Form von ungültigen oder versteckten Zeichen,
-						doppelte Dateiendungen (dateiname.exe.jpg) etc. beinhalten kann, darüberhinaus ohnehin 
-						sämtliche, nicht in einer URL erlaubten Sonderzeichen und Umlaute entfernt werden müssten 
-						sollte der Dateiname aus Sicherheitsgründen komplett neu generiert werden.
+						Since the file name itself can contain invalid or hidden characters, double file extensions (file.exe.jpg) and so on, plus all special characters and umlauts need to be removed for security reasons, the file name should be regenerated completely. 
 						
-						Hierbei muss außerdem bedacht werden, dass die jeweils generierten Dateinamen unique
-						sein müssen, damit die Dateien sich bei gleichem Dateinamen nicht gegenseitig überschreiben.
+						Additionally, the generated filenames must be unique to prevent overwriting each other if two files share the same name.
 					*/
 					/*
-						- 	mt_rand() stellt die verbesserte Version der Funktion rand() dar und generiert 
-							Zufallszahlen mit einer gleichmäßigeren Verteilung über das Wertesprektrum. Ohne zusätzliche
-							Parameter werden Zahlenwerte zwischen 0 und dem höchstmöglichem von mt_rand() verarbeitbaren 
-							Zahlenwert erzeugt.
-						- 	str_shuffle() mischt die Zeichen eines übergebenen Strings zufällig durcheinander.
-						- 	microtime() liefert einen Timestamp mit Millionstel Sekunden zurück (z.B. '0.57914300 163433596'),
-							aus dem für eine URL-konforme Darstellung der Dezimaltrenner und das Leerzeichen entfernt werden.
+						- 	mt_rand() is the improved version of the rand() function and generates random numbers with a more uniform distribution 
+							across the value range. Without additional parameters, it generates numerical values between 0 and the highest possible value that mt_rand() can process.
+						- 	str_shuffle() shuffles the characters of a given string randomly.
+						- 	microtime() returns a timestamp with millisecond precision (e.g. '0.57914300 163433596'), 
+							from which the decimal separator and space are removed for URL-compliant representation.
 					*/
 					$fileName = mt_rand() . str_shuffle('abcdefghijklmnopqrstuvwxyz__--0123456789') . str_replace('.', '', microtime(true));
 if(DEBUG_F)		echo "<p class='debug hint validateImageUpload'><b>Line " . __LINE__ . "</b>: \$fileName: $fileName <i>(" . basename(__FILE__) . ")</i></p>\n";
@@ -430,10 +360,7 @@ if(DEBUG_F)		echo "<p class='debug hint validateImageUpload'><b>Line " . __LINE_
 					
 					#********** GENERATE FILE EXTENSION **********#
 					/*
-						Aus Sicherheitsgründen wird nicht die ursprüngliche Dateinamenerweiterung aus dem
-						Dateinamen verwendet, sondern eine vorgenerierte Dateiendung aus dem Array der 
-						erlaubten MIME Types.
-						Die Dateiendung wird anhand des ausgelesenen MIME Types [key] ausgewählt.
+						For security reasons, the original file extension is not used in the filename, but a predefined file extension from the array of allowed MIME types is chosen based on the detected MIME type [key].
 					*/
 					$fileExtension = $imageAllowedMimeTypes[$imageMimeType];					
 if(DEBUG_F)		echo "<p class='debug value hint validateImageUpload'><b>Line " . __LINE__ . "</b>:\$fileExtension: $fileExtension <i>(" . basename(__FILE__) . ")</i></p>\n";
@@ -441,7 +368,7 @@ if(DEBUG_F)		echo "<p class='debug value hint validateImageUpload'><b>Line " . _
 					
 					#********** GENERATE FILE TARGET **********#
 					/*
-						Endgültigen Speicherpfad auf dem Server generieren:
+						Generate the final storage path on the server:
 						destinationPath/fileName.fileExtension
 					*/
 					$fileTarget = $imageUploadPath . $fileName . $fileExtension;
