@@ -987,7 +987,7 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
 
                         } elseif( $operation === 'edit' ) {
 
-                            // retrieve the ID of the blog post's author
+                            #********* USER AUTHORIZATION **********#
 
                             foreach( $blogArray AS $value ) {
 
@@ -1001,94 +1001,120 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                             // check whether the user is the author of the blog post
                             if( $blogUserID !== $userID ) {
                                 // the user is not the author of the chosen blog post -> editing is prevented
+if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The user is not the author of this post and may not alter the blog post. <i>(" . basename(__FILE__) . ")</i></p>\n";	
 
                                 $info = 'You have no permission to edit this post.';
 
                             } else {
                                 // the user is the author of the chosen blog post -> editing is allowed
+if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The user is confirmed to be the author of this post. <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                                 $showEdit = true;
                             }
 
 
                         } elseif( $operation === 'delete' ) {
-                    
-                            #****************************************#
-                            #************ DB OPERATIONS *************#
-                            #****************************************#
 
-                            // Step 1 DB: Connect to database
+                            #********* USER AUTHORIZATION **********#
 
-                            $PDO = dbConnect('blogprojekt');
+                            foreach( $blogArray AS $value ) {
 
-                            #************ DELETE DATA FROM DB *************#
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Deleting data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
-                    
-                            // Step 2 DB: Create the SQL-Statement and a placeholder-array
-
-                            $sql = 'DELETE FROM blogs WHERE blogID = :blogID';
-
-                            $placeholders = array('blogID' => $chosenBlog);
-
-                            // Step 3 DB: Prepared Statements
-                    
-                            try {
-                                // Prepare: prepare the SQL-Statement
-                                $PDOStatement = $PDO -> prepare($sql);
-                                
-                                // Execute: execute the SQL-Statement and include the placeholder
-                                $PDOStatement -> execute($placeholders);
-                                // showQuery($PDOStatement);
-                                
-                            } catch(PDOException $error) {
-if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
-                            }
-                    
-                            // Step 4 DB: evaluate the DB-operation and close the DB connection
-                            $rowCount = $PDOStatement -> rowCount();
-
-if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
-                    
-                            if( $rowCount !== 1 ) {
-                                // error
-if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Deletion failed! <i>(" . basename(__FILE__) . ")</i></p>\n";	
-                    
-                                // error message for user
-                                $dbError = 'The blog post could not be deleted. Please contact your admin.';
-
-                                // error message for admin
-                                $logError   = 'Error trying to DELETE a BLOG POST to database.';
-
-                                /******** WRITE TO ERROR LOG ******/
-
-                                // create file
-
-                                if( file_exists('./logfiles') === false ) {
-                                    mkdir('./logfiles');
+                                // find the blog in the blogArray that was chosen for deletion
+                                if ( $value['blogID'] == $chosenBlog ) {
+                                    // retrieve the user ID of the blog post to be deleted
+                                    $blogUserID = $value['userID'];
                                 }
-                    
-                                // create error message
-
-                                $logEntry    = "\t<p>";
-                                $logEntry   .= date('Y-m-d | h:i:s |');
-                                $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
-                                $logEntry   .= '<i>' . $logError . '</i>';
-                                $logEntry   .= "</p>\n";
-
-                                // write error message to log
-
-                                file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
-                    
-                            } else {
-                                // success
-if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog post has been successfully deleted. <i>(" . basename(__FILE__) . ")</i></p>\n";	
-                    
-                                $dbSuccess = 'The blog post has been successfully deleted.';
-                    
                             }
+
+                            // check whether the user is the author of the blog post
+                            if( $blogUserID !== $userID ) {
+                                // the user is not the author of the chosen blog post -> deletion is prevented
+if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The blog post was not deleted because the user is not the author. <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                                $info = 'You have no permission to edit this post.';
+
+                            } else {
+                                // the user is the author of the chosen blog post -> deletion is allowed
+if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The user is confirmed to be the author of this post. <i>(" . basename(__FILE__) . ")</i></p>\n";
                     
-                            // close DB connection
-                            dbClose($PDO, $PDOStatement);
+                                #****************************************#
+                                #************ DB OPERATIONS *************#
+                                #****************************************#
+
+                                // Step 1 DB: Connect to database
+
+                                $PDO = dbConnect('blogprojekt');
+
+                                #************ DELETE DATA FROM DB *************#
+if(DEBUG)	                    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Deleting data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        
+                                // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                                $sql = 'DELETE FROM blogs WHERE blogID = :blogID';
+
+                                $placeholders = array('blogID' => $chosenBlog);
+
+                                // Step 3 DB: Prepared Statements
+                        
+                                try {
+                                    // Prepare: prepare the SQL-Statement
+                                    $PDOStatement = $PDO -> prepare($sql);
+                                    
+                                    // Execute: execute the SQL-Statement and include the placeholder
+                                    $PDOStatement -> execute($placeholders);
+                                    // showQuery($PDOStatement);
+                                    
+                                } catch(PDOException $error) {
+if(DEBUG) 		                    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                                }
+                        
+                                // Step 4 DB: evaluate the DB-operation and close the DB connection
+                                $rowCount = $PDOStatement -> rowCount();
+
+if(DEBUG_V)	                    echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        
+                                if( $rowCount !== 1 ) {
+                                    // error
+if(DEBUG)	                        echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Deletion failed! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                        
+                                    // error message for user
+                                    $dbError = 'The blog post could not be deleted. Please contact your admin.';
+
+                                    // error message for admin
+                                    $logError   = 'Error trying to DELETE a BLOG POST to database.';
+
+                                    /******** WRITE TO ERROR LOG ******/
+
+                                    // create file
+
+                                    if( file_exists('./logfiles') === false ) {
+                                        mkdir('./logfiles');
+                                    }
+                        
+                                    // create error message
+
+                                    $logEntry    = "\t<p>";
+                                    $logEntry   .= date('Y-m-d | h:i:s |');
+                                    $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
+                                    $logEntry   .= '<i>' . $logError . '</i>';
+                                    $logEntry   .= "</p>\n";
+
+                                    // write error message to log
+
+                                    file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
+                        
+                                } else {
+                                    // success
+if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog post has been successfully deleted. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                        
+                                    $dbSuccess = 'The blog post has been successfully deleted.';
+                        
+                                }
+                        
+                                // close DB connection
+                                dbClose($PDO, $PDOStatement);
+
+                            } // USER AUTHORIZATION END
 
                         } // PROCESS OPERATIONS END
                     
