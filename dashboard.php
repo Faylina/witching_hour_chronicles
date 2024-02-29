@@ -281,11 +281,34 @@ if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . 
                             if( $rowCount !== 1 ) {
                                 // error
 if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Error when attempting to save $rowCount category! <i>(" . basename(__FILE__) . ")</i></p>\n";	
-
-                                $dbError = 'The category could not be saved. Please try again later.'
+                                
+                                // error message for user
+                                $dbError    = 'The category could not be saved. Please try again later.'
                                 ;
 
-                                // TODO: Log to error log
+                                // error message for admin
+                                $logError   = 'Error trying to save a CATEGORY to database.';
+
+                                /******** WRITE TO ERROR LOG ******/
+
+                                // create file
+
+                                if( file_exists('./logfiles') === false ) {
+                                    mkdir('./logfiles');
+                                }
+
+                                // create error message
+
+                                $logEntry    = "\t<p>";
+                                $logEntry   .= date('Y-m-d | h:i:s |');
+                                $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
+                                $logEntry   .= '<i>' . $logError . '</i>';
+                                $logEntry   .= "</p>\n";
+
+                                // write error message to log
+
+                                file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
+
 
                             } else {
                                 // success
@@ -525,10 +548,33 @@ if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . 
 
                             if( $rowCount !== 1 ) {
                                 // error
-if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The blog article could not be saved to the database! <i>(" . basename(__FILE__) . ")</i></p>\n";	
-                                $dbError = 'The blog article could not be saved. Please contact your admin.';
+if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The blog post could not be saved to the database! <i>(" . basename(__FILE__) . ")</i></p>\n";	
 
-                                // TODO: log to error log
+                                // error message for user
+                                $dbError    = 'The blog post could not be saved. Please contact your admin.';
+
+                                // error message for admin
+                                $logError   = 'Error trying to save a BLOG POST to database.';
+
+                                /******** WRITE TO ERROR LOG ******/
+
+                                // create file
+
+                                if( file_exists('./logfiles') === false ) {
+                                    mkdir('./logfiles');
+                                }
+
+                                // create error message
+
+                                $logEntry    = "\t<p>";
+                                $logEntry   .= date('Y-m-d | h:i:s |');
+                                $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
+                                $logEntry   .= '<i>' . $logError . '</i>';
+                                $logEntry   .= "</p>\n";
+
+                                // write error message to log
+
+                                file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
 
                             } else {
                                 // success
