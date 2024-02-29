@@ -35,6 +35,7 @@
                 #********* VIEW & EDIT VARIABLES ********#
                 $showView               = false;
                 $showEdit               = false;
+                $chosenBlog             = NULL;
 
                 #********* ERROR VARIABLES **************#
                 $errorTitle             = NULL;
@@ -656,7 +657,7 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Vali
                     $errorAlignment             = validateInputString( $editedAlignment, minLength:4, maxLength:5 );
                     $errorContent               = validateInputString( $editedContent, minLength:1, maxLength:10000 );
                     $errorEditedBlogID          = validateInputString( $editedBlogID, minLength:1, maxLength:11 );
-                    $errorEditedImagePath   = validateInputString( $editedImagePath, mandatory:false );
+                    $errorEditedImagePath       = validateInputString( $editedImagePath, mandatory:false );
 
                     #**************** FINAL FORM VALIDATION 1 *****************#
 
@@ -665,10 +666,12 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Vali
                         $errorAlignment             !== NULL OR
                         $errorContent               !== NULL OR
                         $errorEditedBlogID          !== NULL OR 
-                        $errorEditedImagePath   !== NULL ) 
+                        $errorEditedImagePath       !== NULL ) 
                     {
                         // error
 if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 1: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                        $showEdit = true;
 
                     } else {
                         // success
@@ -1217,90 +1220,176 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
             <?php elseif( $showEdit === true ): ?>
 
-                <div class="article-form">   
+                <div class="article-form">  
 
-                    <?php foreach( $blogArray AS $value): ?>
+                    <?php if( $chosenBlog !== NULL ): ?>
 
-                        <?php if( $value['blogID'] == $chosenBlog ): ?>
+                        <!--------------- Edit form loaded for the first time ----------------->
 
-                            <!-- ------------- EDIT FORM BEGIN ------------------------- -->
+                        <?php foreach( $blogArray AS $value): ?>
 
-                            <form action="" class="edit-form" method="POST" enctype="multipart/form-data">
+                            <?php if( $value['blogID'] == $chosenBlog ): ?>
 
-                                <!-- Link to create new post -->
-                                <a href="dashboard.php"><< Write a new blog post</a>
-                                <br>
-                                <div class="form-heading">Edit blog post</div>
-                                <br>
-                                <input type="hidden" name="editForm">
-                                <input type="hidden" name="b12" value="<?= $value['blogID'] ?>">
-                                <input type="hidden" name="b13" value="<?= $value['blogImagePath']?>">
+                                <!-- ------------- EDIT FORM BEGIN ------------------------- -->
 
-                                <!-- security by obscurity: field names are deliberately chosen to be obscure -->
+                                <form action="" class="edit-form" method="POST" enctype="multipart/form-data">
 
-                                <!-- ------------- Category ------------- -->
-                                <label for="b8">Choose a category</label>
-                                <select name="b8" id="b8" class="form-text">
-                                    <?= $value['catID'] ?>
-                                    <?php foreach( $categoryArray AS $dbCategory ): ?>
-                                        <option value="<?= $dbCategory['catID'] ?>" <?php if($dbCategory['catID'] == $value['catID']) echo 'selected'?>>
-                                            <?= $dbCategory['catLabel'] ?>
-                                        </option>
-                                    <?php endforeach ?>
-                                </select>
+                                    <!-- Link to create new post -->
+                                    <a href="dashboard.php"><< Write a new blog post</a>
+                                    <br>
+                                    <div class="form-heading">Edit blog post</div>
+                                    <br>
+                                    <input type="hidden" name="editForm">
+                                    <input type="hidden" name="b12" value="<?= $value['blogID'] ?>">
+                                    <input type="hidden" name="b13" value="<?= $value['blogImagePath']?>">
 
-                                <br>
-                                <!-- ------------- Title ---------------- -->
-                                <label for="b9">Write the title of your post</label>
-                                <div class="error"><?= $errorTitle ?></div>
-                                <input type="text" class="form-text" name="b9" id="b9" placeholder="Title" value="<?= $value['blogHeadline'] ?>">
+                                    <!-- security by obscurity: field names are deliberately chosen to be obscure -->
 
-                                <br>
-                                <!-- ------------- Image Upload ---------- -->
-                                <fieldset>
-                                    <legend>Upload an image</legend>
+                                    <!-- ------------- Category ------------- -->
+                                    <label for="b8">Choose a category</label>
+                                    <select name="b8" id="b8" class="form-text">
+                                        <?= $value['catID'] ?>
+                                        <?php foreach( $categoryArray AS $dbCategory ): ?>
+                                            <option value="<?= $dbCategory['catID'] ?>" <?php if($dbCategory['catID'] == $value['catID']) echo 'selected'?>>
+                                                <?= $dbCategory['catLabel'] ?>
+                                            </option>
+                                        <?php endforeach ?>
+                                    </select>
 
-                                    <!-- ------------- Database Image ---------- -->
+                                    <br>
+                                    <!-- ------------- Title ---------------- -->
+                                    <label for="b9">Write the title of your post</label>
+                                    <div class="error"><?= $errorTitle ?></div>
+                                    <input type="text" class="form-text" name="b9" id="b9" placeholder="Title" value="<?= $value['blogHeadline'] ?>">
 
-                                    <?php if( $value['blogImagePath'] !== NULL ): ?>
-                                        <img class="left" src="<?= $value['blogImagePath']?>" alt="image for the blog article">
-                                    <?php endif ?>
-
-                                    <!-- ------------- Image Info Text ---------- -->
-                                    <p class="image-info">
-                                        You may upload an image of the type <?= $mimeTypes ?>. <br>
-                                        The width of the image may not exceed <?= IMAGE_MAX_WIDTH ?> pixels. <br>
-                                        The height of the image may not exceed <?= IMAGE_MAX_HEIGHT ?> pixels. <br>
-                                        The size of the file may not exceed <?= IMAGE_MAX_SIZE/1024/1000 ?> MB.
-                                    </p>
                                     <br>
                                     <!-- ------------- Image Upload ---------- -->
-                                    <div class="error"><?= $errorImage ?></div>
-                                    <input type="file" name="image">
-                                    <br>
-                                    <br>
-                                    <!-- ------------- Image Alignment ---------- -->
-                                    <label for="b10">Choose the alignment of the image</label>
-                                    <br>
-                                    <select name="b10" id="b10" class="form-select">
-                                        <option value="left" <?php if( $value['blogImageAlignment'] === 'left') echo 'selected' ?>>Left</option>
-                                        <option value="right" <?php if( $value['blogImageAlignment'] === 'right') echo 'selected' ?>>Right</option>
-                                    </select>
-                                    <br>
-                                </fieldset>
-                                <br>
+                                    <fieldset>
+                                        <legend>Upload an image</legend>
 
-                                <!-- ------------- Content ------------------ -->
-                                <label for="b11">Write your blog post</label>
-                                <div class="error"><?= $errorContent ?></div>
-                                <textarea name="b11" id="b11" class="textarea" cols="30" rows="25"><?= $value['blogContent'] ?></textarea>
+                                        <!-- ------------- Database Image ---------- -->
+
+                                        <?php if( $value['blogImagePath'] !== NULL ): ?>
+                                            <img class="left" src="<?= $value['blogImagePath']?>" alt="image for the blog article">
+                                        <?php endif ?>
+
+                                        <!-- ------------- Image Info Text ---------- -->
+                                        <p class="image-info">
+                                            You may upload an image of the type <?= $mimeTypes ?>. <br>
+                                            The width of the image may not exceed <?= IMAGE_MAX_WIDTH ?> pixels. <br>
+                                            The height of the image may not exceed <?= IMAGE_MAX_HEIGHT ?> pixels. <br>
+                                            The size of the file may not exceed <?= IMAGE_MAX_SIZE/1024/1000 ?> MB.
+                                        </p>
+                                        <br>
+                                        <!-- ------------- Image Upload ---------- -->
+                                        <div class="error"><?= $errorImage ?></div>
+                                        <input type="file" name="image">
+                                        <br>
+                                        <br>
+                                        <!-- ------------- Image Alignment ---------- -->
+                                        <label for="b10">Choose the alignment of the image</label>
+                                        <br>
+                                        <select name="b10" id="b10" class="form-select">
+                                            <option value="left" <?php if( $value['blogImageAlignment'] === 'left') echo 'selected' ?>>Left</option>
+                                            <option value="right" <?php if( $value['blogImageAlignment'] === 'right') echo 'selected' ?>>Right</option>
+                                        </select>
+                                        <br>
+                                    </fieldset>
+                                    <br>
+
+                                    <!-- ------------- Content ------------------ -->
+                                    <label for="b11">Write your blog post</label>
+                                    <div class="error"><?= $errorContent ?></div>
+                                    <textarea name="b11" id="b11" class="textarea" cols="30" rows="25"><?= $value['blogContent'] ?></textarea>
+                                    <br>
+                                    <input type="submit" class="form-button" value="Publish">
+                                </form>
+                                <!-- ------------- EDIT FORM END ---------------------------- -->
+
+                            <?php endif ?>
+                        <?php endforeach ?>
+                    
+                    <?php else: ?>
+                        
+                        <!-- Edit form in the case of an input error --> 
+
+                        <!-- ------------- EDIT FORM BEGIN ------------------------- -->
+
+                        <form action="" class="edit-form" method="POST" enctype="multipart/form-data">
+
+                            <!-- Link to create new post -->
+                            <a href="dashboard.php"><< Write a new blog post</a>
+                            <br>
+                            <div class="form-heading">Edit blog post</div>
+                            <br>
+                            <input type="hidden" name="editForm">
+                            <input type="hidden" name="b12" value="<?= $editedBlogID ?>">
+                            <input type="hidden" name="b13" value="<?= $editedImagePath ?>">
+
+                            <!-- security by obscurity: field names are deliberately chosen to be obscure -->
+
+                            <!-- ------------- Category ------------- -->
+                            <label for="b8">Choose a category</label>
+                            <select name="b8" id="b8" class="form-text">
+                                <?= $editedCategory ?>
+                                <?php foreach( $categoryArray AS $dbCategory ): ?>
+                                    <option value="<?= $dbCategory['catID'] ?>" <?php if($dbCategory['catID'] == $editedCategory) echo 'selected'?>>
+                                        <?= $dbCategory['catLabel'] ?>
+                                    </option>
+                                <?php endforeach ?>
+                            </select>
+
+                            <br>
+                            <!-- ------------- Title ---------------- -->
+                            <label for="b9">Write the title of your post</label>
+                            <div class="error"><?= $errorTitle ?></div>
+                            <input type="text" class="form-text" name="b9" id="b9" placeholder="Title" value="<?= $editedTitle ?>">
+
+                            <br>
+                            <!-- ------------- Image Upload ---------- -->
+                            <fieldset>
+                                <legend>Upload an image</legend>
+
+                                <!-- ------------- Database Image ---------- -->
+
+                                <?php if( $editedImagePath !== NULL ): ?>
+                                    <img class="left" src="<?= $editedImagePath ?>" alt="image for the blog article">
+                                <?php endif ?>
+
+                                <!-- ------------- Image Info Text ---------- -->
+                                <p class="image-info">
+                                    You may upload an image of the type <?= $mimeTypes ?>. <br>
+                                    The width of the image may not exceed <?= IMAGE_MAX_WIDTH ?> pixels. <br>
+                                    The height of the image may not exceed <?= IMAGE_MAX_HEIGHT ?> pixels. <br>
+                                    The size of the file may not exceed <?= IMAGE_MAX_SIZE/1024/1000 ?> MB.
+                                </p>
                                 <br>
-                                <input type="submit" class="form-button" value="Publish">
+                                <!-- ------------- Image Upload ---------- -->
+                                <div class="error"><?= $errorImage ?></div>
+                                <input type="file" name="image">
+                                <br>
+                                <br>
+                                <!-- ------------- Image Alignment ---------- -->
+                                <label for="b10">Choose the alignment of the image</label>
+                                <br>
+                                <select name="b10" id="b10" class="form-select">
+                                    <option value="left" <?php if( $editedAlignment === 'left') echo 'selected' ?>>Left</option>
+                                    <option value="right" <?php if( $editedAlignment === 'right') echo 'selected' ?>>Right</option>
+                                </select>
+                                <br>
+                            </fieldset>
+                            <br>
+
+                            <!-- ------------- Content ------------------ -->
+                            <label for="b11">Write your blog post</label>
+                            <div class="error"><?= $errorContent ?></div>
+                            <textarea name="b11" id="b11" class="textarea" cols="30" rows="25"><?= $editedContent ?></textarea>
+                            <br>
+                            <input type="submit" class="form-button" value="Publish">
                             </form>
                             <!-- ------------- EDIT FORM END ---------------------------- -->
 
-                        <?php endif ?>
-                    <?php endforeach ?>
+                    <?php endif ?>
                 </div>
 
             <?php else: ?>
