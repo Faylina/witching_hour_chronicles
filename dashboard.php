@@ -9,6 +9,7 @@
 				require_once('./include/config.inc.php');
                 require_once('./include/form.inc.php');
                 require_once('./include/db.inc.php');
+                require_once('./include/dateTime.inc.php');
 
 #*************************************************************************#
 				
@@ -770,7 +771,11 @@ if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching
 
                 // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
-                $sql = 'SELECT blogID, blogHeadline, blogImagePath, blogImageAlignment, blogContent FROM blogs';
+                $sql = 'SELECT userFirstName, userLastName, userCity, blogID, blogHeadline, blogImagePath, blogImageAlignment, blogContent, blogDate, catLabel
+                        FROM blogs 
+                        INNER JOIN users USING(userID)
+                        INNER JOIN categories USING(catID)
+                        ORDER BY blogDate DESC';
 
                 $placeholders = array();
 
@@ -874,69 +879,121 @@ if(DEBUG_A)	echo "</pre>";
 
         <div class="forms">
 
-            <!-- ------------- BLOG POST FORM BEGIN ------------------------- -->
+            
+            <?php if( $showView === true ): ?>
 
-            <form class="article-form" action="" method="POST" enctype="multipart/form-data">
-                <div class="form-heading">Write a new blog article</div>
-                <br>
-                <input type="hidden" name="articleForm">
+                <!-- ------------- BLOG POST BEGIN ---------------------------------- -->
 
-                <!-- security by obscurity: field names are deliberately chosen to be obscure -->
+                <div class="blog">
 
-                <!-- ------------- Category ------------- -->
-                <label for="b1">Choose a category</label>
-                <select name="b1" id="b1" class="form-text">
-                    <?php foreach( $categoryArray AS $value ): ?>
-                        <option value="<?= $value['catID'] ?>" <?php if($value['catID'] == $category) echo 'selected'?>>
-                            <?= $value['catLabel'] ?>
-                        </option>
-                    <?php endforeach ?>
-                </select>
+                <!-- -------- Generate blog articles ---------- -->
+                <?php foreach( $blogArray AS $value): ?>
 
-                <br>
-                <!-- ------------- Title ---------------- -->
-                <label for="b2">Write the title of your post</label>
-                <div class="error"><?= $errorTitle ?></div>
-                <input type="text" class="form-text" name="b2" id="b2" placeholder="Title" value="<?= $title ?>">
+                    <?php if( $value['blogID'] == $chosenBlog ): ?>
 
-                <br>
-                <!-- ------------- Image Upload ---------- -->
-                <fieldset>
-                    <legend>Upload an image</legend>
+                        <!-- Convert ISO time from DB to EU time and split into date and time -->
+                        <?php $dateArray = isoToEuDateTime( $value['blogDate'] ) ?>
 
-                    <!-- ------------- Image Info Text ---------- -->
-                    <p class="image-info">
-                        You may upload an image of the type <?= $mimeTypes ?>. <br>
-                        The width of the image may not exceed <?= IMAGE_MAX_WIDTH ?> pixels. <br>
-                        The height of the image may not exceed <?= IMAGE_MAX_HEIGHT ?> pixels. <br>
-                        The size of the file may not exceed <?= IMAGE_MAX_SIZE/1024/1000 ?> MB.
-                    </p>
+                        <!-- Link to create new post -->
+                        <a href="dashboard.php"><< Write a new blog post</a>
+
+                        <!-- Blog header -->
+                        <div class="blog-category">Category: <?= $value['catLabel'] ?></div>
+                        <div class="blog-title"><?= $value['blogHeadline'] ?></div>
+                        <div class="blog-meta">
+                            <?= $value['userFirstName'] ?> <?= $value['userLastName'] ?> (<?= $value['userCity'] ?>) 
+                            wrote on <?= $dateArray['date'] ?> at <?= $dateArray['time'] ?> o'clock:
+                        </div>
+
+                        <!-- Blog content -->
+                        <div class="container clearfix">
+                            <!-- Prevent empty images from displaying --> 
+                            <?php if( $value['blogImagePath'] !== NULL ): ?>
+                                <img class="<?= $value['blogImageAlignment']?>" src="<?= $value['blogImagePath']?>" alt="image for the blog article">
+                            <?php endif ?>
+
+                            <div class="blog-content"><?php echo nl2br( $value['blogContent'] ) ?></div>
+                        </div>
+
+                        <br>
+                        <hr>
+                        <br>
+
+                    <?php endif ?>
+
+                <?php endforeach ?>
+                </div>
+                <!-- ------------- BLOG POST END ------------------------------------ -->
+
+            <?php elseif( $showEdit === true ): ?>
+
+            <?php else: ?>
+
+                <!-- ------------- BLOG POST FORM BEGIN ------------------------- -->
+
+                <form class="article-form" action="" method="POST" enctype="multipart/form-data">
+                    <div class="form-heading">Write a new blog post</div>
+                    <br>
+                    <input type="hidden" name="articleForm">
+
+                    <!-- security by obscurity: field names are deliberately chosen to be obscure -->
+
+                    <!-- ------------- Category ------------- -->
+                    <label for="b1">Choose a category</label>
+                    <select name="b1" id="b1" class="form-text">
+                        <?php foreach( $categoryArray AS $value ): ?>
+                            <option value="<?= $value['catID'] ?>" <?php if($value['catID'] == $category) echo 'selected'?>>
+                                <?= $value['catLabel'] ?>
+                            </option>
+                        <?php endforeach ?>
+                    </select>
+
+                    <br>
+                    <!-- ------------- Title ---------------- -->
+                    <label for="b2">Write the title of your post</label>
+                    <div class="error"><?= $errorTitle ?></div>
+                    <input type="text" class="form-text" name="b2" id="b2" placeholder="Title" value="<?= $title ?>">
+
                     <br>
                     <!-- ------------- Image Upload ---------- -->
-                    <div class="error"><?= $errorImage ?></div>
-                    <input type="file" name="image">
-                    <br>
-                    <br>
-                    <!-- ------------- Image Alignment ---------- -->
-                    <label for="b3">Choose the alignment of the image</label>
-                    <br>
-                    <select name="b3" id="b3" class="form-select">
-                        <option value="left" <?php if( $alignment === 'left') echo 'selected' ?>>Left</option>
-                        <option value="right" <?php if( $alignment === 'right') echo 'selected' ?>>Right</option>
-                    </select>
-                    <br>
-                </fieldset>
-                <br>
+                    <fieldset>
+                        <legend>Upload an image</legend>
 
-                <!-- ------------- Content ------------------ -->
-                <label for="b4">Write your blog post</label>
-                <div class="error"><?= $errorContent ?></div>
-                <textarea name="b4" id="b4" class="textarea" cols="30" rows="25"><?= $content ?></textarea>
-                <br>
-                <input type="submit" class="form-button" value="Publish">
-            </form>
-                
-            <!-- ------------- BLOG POST FORM END ---------------------------- -->
+                        <!-- ------------- Image Info Text ---------- -->
+                        <p class="image-info">
+                            You may upload an image of the type <?= $mimeTypes ?>. <br>
+                            The width of the image may not exceed <?= IMAGE_MAX_WIDTH ?> pixels. <br>
+                            The height of the image may not exceed <?= IMAGE_MAX_HEIGHT ?> pixels. <br>
+                            The size of the file may not exceed <?= IMAGE_MAX_SIZE/1024/1000 ?> MB.
+                        </p>
+                        <br>
+                        <!-- ------------- Image Upload ---------- -->
+                        <div class="error"><?= $errorImage ?></div>
+                        <input type="file" name="image">
+                        <br>
+                        <br>
+                        <!-- ------------- Image Alignment ---------- -->
+                        <label for="b3">Choose the alignment of the image</label>
+                        <br>
+                        <select name="b3" id="b3" class="form-select">
+                            <option value="left" <?php if( $alignment === 'left') echo 'selected' ?>>Left</option>
+                            <option value="right" <?php if( $alignment === 'right') echo 'selected' ?>>Right</option>
+                        </select>
+                        <br>
+                    </fieldset>
+                    <br>
+
+                    <!-- ------------- Content ------------------ -->
+                    <label for="b4">Write your blog post</label>
+                    <div class="error"><?= $errorContent ?></div>
+                    <textarea name="b4" id="b4" class="textarea" cols="30" rows="25"><?= $content ?></textarea>
+                    <br>
+                    <input type="submit" class="form-button" value="Publish">
+                </form>
+                    
+                <!-- ------------- BLOG POST FORM END ---------------------------- -->
+
+            <?php endif ?>
 
             <div class="mini-forms">
                 <!-- ------------- CATEGORY FORM BEGIN ------------------------- -->

@@ -13,6 +13,16 @@ ul {
     list-style: none;
 }
 
+a {
+    color: white;
+    text-decoration: none;
+    margin: 5px;
+}
+
+a:hover {
+    color: #4e93ac;
+}
+
 body {
     background: rgb(0, 0, 18);
     background-image: url("./images/background.png");
