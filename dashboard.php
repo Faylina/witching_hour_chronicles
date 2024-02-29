@@ -28,13 +28,17 @@
                 $category           = NULL;
                 $title              = NULL;
                 $alignment          = NULL;
-                $article            = NULL;
+                $content            = NULL;
                 $imagePath          = NULL;
+
+                #********* VIEW & EDIT VARIABLES ********#
+                $showView           = false;
+                $showEdit           = false;
 
                 #********* ERROR VARIABLES **************#
                 $errorTitle         = NULL;
                 $errorImage         = NULL;
-                $errorArticle       = NULL;
+                $errorContent       = NULL;
                 $errorCategory      = NULL;
                 $dbError            = NULL;
                 $dbSuccess          = NULL;
@@ -287,7 +291,7 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
                                 ;
 
                                 // error message for admin
-                                $logError   = 'Error trying to save a CATEGORY to database.';
+                                $logError   = 'Error trying to SAVE a CATEGORY to database.';
 
                                 /******** WRITE TO ERROR LOG ******/
 
@@ -410,12 +414,12 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Read
                     $category   = sanitizeString($_POST['b1']);
                     $title      = sanitizeString($_POST['b2']);
                     $alignment  = sanitizeString($_POST['b3']);
-                    $article    = sanitizeString($_POST['b4']);
+                    $content    = sanitizeString($_POST['b4']);
 
 if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$category: $category <i>(" . basename(__FILE__) . ")</i></p>\n";
 if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$title: $title <i>(" . basename(__FILE__) . ")</i></p>\n";
 if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$alignment: $alignment <i>(" . basename(__FILE__) . ")</i></p>\n";
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$article: $article <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$content: $content <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                     // Step 3 FORM: Field validation
 
@@ -425,14 +429,14 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Vali
                     $errorTitle     = validateInputString( $title, minLength:1 );
                     // $alignment is not mandatory but should return a value either way. It would indicate an error should it return empty.
                     $errorAlignment = validateInputString( $alignment, minLength:4, maxLength:5 );
-                    $errorArticle   = validateInputString( $article, minLength:1, maxLength:10000 );
+                    $errorContent   = validateInputString( $content, minLength:1, maxLength:10000 );
 
                     #**************** FINAL FORM VALIDATION 1 *****************#
 
                     if( $errorCategory  !== NULL OR 
                         $errorTitle     !== NULL OR 
                         $errorAlignment !== NULL OR
-                        $errorArticle   !== NULL ) 
+                        $errorContent   !== NULL ) 
                     {
                         // error
 if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 1: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
@@ -522,7 +526,7 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
                             $placeholders = array(  'blogHeadline'          => $title, 
                                                     'blogImagePath'         => $imagePath, 
                                                     'blogImageAlignment'    => $alignment, 
-                                                    'blogContent'           => $article, 
+                                                    'blogContent'           => $content, 
                                                     'catID'                 => $category, 
                                                     'userID'                => $userID );
 
@@ -554,7 +558,7 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
                                 $dbError    = 'The blog post could not be saved. Please contact your admin.';
 
                                 // error message for admin
-                                $logError   = 'Error trying to save a BLOG POST to database.';
+                                $logError   = 'Error trying to SAVE a BLOG POST to database.';
 
                                 /******** WRITE TO ERROR LOG ******/
 
@@ -586,7 +590,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                                 $category   = NULL;
                                 $title      = NULL;
                                 $alignment  = NULL;
-                                $article    = NULL;
+                                $content    = NULL;
 
                             } // UPLOAD DATA TO DATABASE END
 
@@ -598,6 +602,205 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                     } // FINAL FORM VALIDATION 1 END
 
                 } // PROCESS ARTICLE FORM END
+
+#*************************************************************************#
+
+
+				#********************************************#
+				#******** PROCESS VIEW & EDIT FORM **********#
+				#********************************************#
+
+                #******** PREVIEW POST ARRAY ****************#
+/*
+if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_POST <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	print_r($_POST);					
+if(DEBUG_A)	echo "</pre>";
+*/
+
+                // Step 1 FORM: Check whether the form has been sent
+
+                if( isset($_POST['previousPostsForm']) === true ) {
+if(DEBUG)		    echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The form 'previousPostsForm' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";									
+                        
+                    // Step 2 FORM: Read, sanitize and output form data
+    
+if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Reading and sanitizing form data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $chosenBlog     = sanitizeString($_POST['b6']);
+                    $operation      = sanitizeString($_POST['b7']);
+
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$chosenBlog: $chosenBlog <i>(" . basename(__FILE__) . ")</i></p>\n";
+if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$operation: $operation <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    // Step 3 FORM: Field validation
+
+if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating fields... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                    $errorChosenBlog    = validateInputString($chosenBlog, minLength:1, maxLength:11);
+                    $errorOperation     = validateInputString($operation, minLength:4, maxLength:6);
+
+                    // FINAL FORM VALIDATION
+
+                    if( $errorChosenBlog !== NULL OR $errorOperation !== NULL ) {
+                        // error
+if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The edit form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                    } else {
+                        //success
+if(DEBUG)	            echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The form is formally free of errors. <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+
+                        // Step 4 FORM: data processing
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The form data is being further processed... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        // PROCESS OPERATIONS
+
+                        if( $operation === 'view' ) {
+
+                            $showView = true; 
+
+                        } elseif( $operation === 'edit' ) {
+
+                            $showEdit = true;
+
+                        } elseif( $operation === 'delete' ) {
+
+                            #****************************************#
+				            #************ DB OPERATIONS *************#
+				            #****************************************#
+
+                            // Step 1 DB: Connect to database
+
+                            $PDO = dbConnect('blogprojekt');
+
+                            #************ DELETE DATA FROM DB *************#
+if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Deleting data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                            $sql = 'DELETE FROM blogs WHERE blogID = :blogID';
+
+                            $placeholders = array('blogID' => $chosenBlog);
+
+                            // Step 3 DB: Prepared Statements
+
+                            try {
+                                // Prepare: prepare the SQL-Statement
+                                $PDOStatement = $PDO -> prepare($sql);
+                                
+                                // Execute: execute the SQL-Statement and include the placeholder
+                                $PDOStatement -> execute($placeholders);
+                                // showQuery($PDOStatement);
+                                
+                            } catch(PDOException $error) {
+if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                            }
+
+                            // Step 4 DB: evaluate the DB-operation and close the DB connection
+                            $rowCount = $PDOStatement -> rowCount();
+
+if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            if( $rowCount !== 1 ) {
+                                // error
+if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Deletion failed! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                                // error message for user
+                                $dbError = 'The blog post could not be deleted. Please contact your admin.';
+
+                                // error message for admin
+                                $logError   = 'Error trying to DELETE a BLOG POST to database.';
+
+                                /******** WRITE TO ERROR LOG ******/
+
+                                // create file
+
+                                if( file_exists('./logfiles') === false ) {
+                                    mkdir('./logfiles');
+                                }
+
+                                // create error message
+
+                                $logEntry    = "\t<p>";
+                                $logEntry   .= date('Y-m-d | h:i:s |');
+                                $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
+                                $logEntry   .= '<i>' . $logError . '</i>';
+                                $logEntry   .= "</p>\n";
+
+                                // write error message to log
+
+                                file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
+
+                            } else {
+                                // success
+if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog post has been successfully deleted. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                                $dbSuccess = 'The blog post has been successfully deleted.';
+
+                            }
+
+                            // close DB connection
+                            dbClose($PDO, $PDOStatement);
+
+                        } // PROCESS OPERATIONS END
+                    
+                    } // FINAL FORM VALIDATION END
+
+                } // PROCESS VIEW & EDIT FORM END
+
+
+#*************************************************************************#
+
+                #****************************************#
+				#******* FETCH BLOG DATA FROM DB ********#
+				#****************************************#
+
+				#****************************************#
+				#************* DB OPERATIONS ************#
+				#****************************************#
+
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch blog data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                // Step 1 DB: Connect to database
+
+                $PDO = dbConnect('blogprojekt');
+
+                #************ FETCH DATA FROM DB *************#
+if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching blog data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                $sql = 'SELECT blogID, blogHeadline, blogImagePath, blogImageAlignment, blogContent FROM blogs';
+
+                $placeholders = array();
+
+                // Step 3 DB: Prepared Statements
+
+                try {
+                    // Prepare: prepare the SQL-Statement
+                    $PDOStatement = $PDO -> prepare($sql);
+                    
+                    // Execute: execute the SQL-Statement and include the placeholder
+                    $PDOStatement -> execute($placeholders);
+                    // showQuery($PDOStatement);
+                    
+                } catch(PDOException $error) {
+if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                }
+
+                // Step 4 DB: evaluate the DB-operation and close the DB connection
+
+                $blogArray = $PDOStatement -> fetchAll(PDO::FETCH_ASSOC);
+
+                // close DB connection
+
+                dbClose($PDO, $PDOStatement);
+/*
+if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$blogArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
+if(DEBUG_A)	print_r($blogArray);				
+if(DEBUG_A)	echo "</pre>";
+*/
+
 
 #*************************************************************************#
 ?>
@@ -692,7 +895,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
                 <br>
                 <!-- ------------- Title ---------------- -->
-                <label for="b2">Write the title of your article</label>
+                <label for="b2">Write the title of your post</label>
                 <div class="error"><?= $errorTitle ?></div>
                 <input type="text" class="form-text" name="b2" id="b2" placeholder="Title" value="<?= $title ?>">
 
@@ -727,32 +930,74 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
                 <!-- ------------- Content ------------------ -->
                 <label for="b4">Write your blog post</label>
-                <div class="error"><?= $errorArticle ?></div>
-                <textarea name="b4" id="b4" class="textarea" cols="30" rows="25"><?= $article ?></textarea>
+                <div class="error"><?= $errorContent ?></div>
+                <textarea name="b4" id="b4" class="textarea" cols="30" rows="25"><?= $content ?></textarea>
                 <br>
                 <input type="submit" class="form-button" value="Publish">
             </form>
                 
             <!-- ------------- BLOG POST FORM END ---------------------------- -->
 
+            <div class="mini-forms">
+                <!-- ------------- CATEGORY FORM BEGIN ------------------------- -->
 
-            <!-- ------------- CATEGORY FORM BEGIN ------------------------- -->
+                <form class="category-form" action="" method="POST">
 
-            <form class="category-form" action="" method="POST">
+                    <div class="form-heading">Create a new category</div>
+                    
+                    <input type="hidden" name="categoryForm">
+                    <br>
+                    <label for="b5">Name the new category</label>
+                    <div class="error"><?= $errorCategory ?></div>
+                    <input type="text" class="form-text" name="b5" id="b5" placeholder="Category name" value="<?= $newCategory ?>">
+                    <br>
+                    <input type="submit" class="form-button" value="Create category">
 
-                <div class="form-heading">Create a new category</div>
-                
-                <input type="hidden" name="categoryForm">
-                <br>
-                <label for="b5">Name the new category</label>
-                <div class="error"><?= $errorCategory ?></div>
-                <input type="text" class="form-text" name="b5" id="b5" placeholder="Category name" value="<?= $newCategory ?>">
-                <br>
-                <input type="submit" class="form-button" value="Create category">
+                </form>
 
-            </form>
+                <!-- ------------- CATEGORY FORM END --------------------------- -->
 
-            <!-- ------------- CATEGORY FORM END --------------------------- -->
+
+                <!-- ------------- EDIT & VIEW FORM BEGIN ---------------------- -->
+
+                <form class="category-form" action="" method="POST">
+
+                    <div class="form-heading">Previous blog posts</div>
+                    
+                    <input type="hidden" name="previousPostsForm">
+                    <br>
+                    <!-- Blog post title -->
+                    <label for="b6">Select a blog post</label>
+                    <select name="b6" id="b6" class="form-text">
+                        <?php foreach( $blogArray AS $value ): ?>
+                            <option value="<?= $value['blogID'] ?>">
+                                <?= $value['blogHeadline'] ?>
+                            </option>
+                        <?php endforeach ?>
+                    </select>
+                    <br>
+                    <!-- Operation selection -->
+                    <div class="radio-buttons">
+                        <div>
+                            <input type="radio" name="b7" id="view" value="view" checked>
+                            <label for="view">View</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="b7" id="edit" value="edit">
+                            <label for="edit">Edit</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="b7" id="delete" value="delete">
+                            <label for="delete">Delete</label>
+                        </div>
+                    </div>
+                    <br>
+                    <input type="submit" class="form-button" value="Proceed">
+
+                </form>
+
+                <!-- ------------- EDIT & VIEW FORM END ------------------------ -->
+            </div>
             
         </div>     
         
