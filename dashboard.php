@@ -44,7 +44,10 @@
                 $errorCategory          = NULL;
                 $dbError                = NULL;
                 $dbSuccess              = NULL;
+                $dbDeleteError          = NULL;
+                $dbDeleteSuccess        = NULL;
                 $info                   = NULL;
+                $alert                  = NULL;
 
                 #********* GENERATE LIST OF ALLOWED MIME TYPES *********#
 
@@ -113,11 +116,11 @@ if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \
 #*************************************************************************#
 				
 
-				#***************************************************#
-				#******** PROCESS URL PARAMETERS FOR LOGOUT ********#
-				#***************************************************#
+				#*****************************************#
+				#******** PROCESS URL PARAMETERS *********#
+				#*****************************************#
 
-                #******** PREVIEW URL PARAMETERS *******************#
+                #******** PREVIEW URL PARAMETERS *********#
 /*
 if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_GET <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
 if(DEBUG_A)	    print_r($_GET);					
@@ -155,8 +158,105 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
 
                         // 3. Fallback in case of an error: end processing of the script
                         exit();
-                                        
-                    } // LOGOUT END
+
+                    #*************** DELETION **************#
+                    } elseif( $action === 'delete') {
+
+                        // fetch the blogID of the post to be deleted
+                        $chosenBlog = $_SESSION['postToBeDeleted'];
+
+                        #****************************************#
+                        #************ DB OPERATIONS *************#
+                        #****************************************#
+
+                        // Step 1 DB: Connect to database
+
+                        $PDO = dbConnect('blogprojekt');
+
+                        #************ DELETE DATA FROM DB *************#
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Deleting data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        
+                        // Step 2 DB: Create the SQL-Statement and a placeholder-array
+
+                        $sql = 'DELETE FROM blogs WHERE blogID = :blogID';
+
+                        $placeholders = array('blogID' => $chosenBlog);
+
+                        // Step 3 DB: Prepared Statements
+                        
+                        try {
+                            // Prepare: prepare the SQL-Statement
+                            $PDOStatement = $PDO -> prepare($sql);
+                            
+                            // Execute: execute the SQL-Statement and include the placeholder
+                            $PDOStatement -> execute($placeholders);
+                            // showQuery($PDOStatement);
+                            
+                        } catch(PDOException $error) {
+if(DEBUG) 		            echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                        }
+                        
+                        // Step 4 DB: evaluate the DB-operation and close the DB connection
+                        $rowCount = $PDOStatement -> rowCount();
+
+if(DEBUG_V)	            echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        
+                        if( $rowCount !== 1 ) {
+                            // error
+if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Deletion failed! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                        
+                            // error message for user
+                            $dbDeleteError = 'The blog post could not be deleted. Please contact your admin.';
+
+                            // error message for admin
+                            $logError   = 'Error trying to DELETE a BLOG POST to database.';
+
+                            /******** WRITE TO ERROR LOG ******/
+
+                            // create file
+
+                            if( file_exists('./logfiles') === false ) {
+                                mkdir('./logfiles');
+                            }
+                        
+                            // create error message
+
+                            $logEntry    = "\t<p>";
+                            $logEntry   .= date('Y-m-d | h:i:s |');
+                            $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
+                            $logEntry   .= '<i>' . $logError . '</i>';
+                            $logEntry   .= "</p>\n";
+
+                            // write error message to log
+
+                            file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
+
+                        
+                        } else {
+                            // success
+if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog post has been successfully deleted. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                        
+                            $dbDeleteSuccess = 'The blog post has been successfully deleted.';
+
+                        }
+                        
+                        // close DB connection
+                        dbClose($PDO, $PDOStatement);
+                    
+                    } elseif( $action === 'cancelDelete' OR $action = 'okay') {
+
+if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Reloading page after cancel or confirmation... <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                        // delete blog ID from session
+                        $_SESSION['postToBeDeleted'] = '';
+
+                        // 2. Reload homepage
+                        header('LOCATION: index.php');
+
+                        // 3. Fallback in case of an error: end processing of the script
+                        exit();
+
+                    } // BRANCHING END
                     
                 } // PROCESS URL PARAMETERS END
 
@@ -982,10 +1082,12 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                         // PROCESS OPERATIONS
 
                         if( $operation === 'view' ) {
+if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Showing blog post... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                             $showView = true; 
 
                         } elseif( $operation === 'edit' ) {
+if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Starting editing process... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                             #********* USER AUTHORIZATION **********#
 
@@ -1014,6 +1116,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 
 
                         } elseif( $operation === 'delete' ) {
+if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Starting deletion process... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                             #********* USER AUTHORIZATION **********#
 
@@ -1022,7 +1125,8 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                                 // find the blog in the blogArray that was chosen for deletion
                                 if ( $value['blogID'] == $chosenBlog ) {
                                     // retrieve the user ID of the blog post to be deleted
-                                    $blogUserID = $value['userID'];
+                                    $blogUserID         = $value['userID'];
+                                    $blogTitleToDelete  = $value['blogHeadline'];
                                 }
                             }
 
@@ -1036,83 +1140,11 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
                             } else {
                                 // the user is the author of the chosen blog post -> deletion is allowed
 if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The user is confirmed to be the author of this post. <i>(" . basename(__FILE__) . ")</i></p>\n";
-                    
-                                #****************************************#
-                                #************ DB OPERATIONS *************#
-                                #****************************************#
 
-                                // Step 1 DB: Connect to database
+                                // store blog ID of the post to be deleted in session
+                                $_SESSION['postToBeDeleted']         = $chosenBlog;
 
-                                $PDO = dbConnect('blogprojekt');
-
-                                #************ DELETE DATA FROM DB *************#
-if(DEBUG)	                    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Deleting data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
-                        
-                                // Step 2 DB: Create the SQL-Statement and a placeholder-array
-
-                                $sql = 'DELETE FROM blogs WHERE blogID = :blogID';
-
-                                $placeholders = array('blogID' => $chosenBlog);
-
-                                // Step 3 DB: Prepared Statements
-                        
-                                try {
-                                    // Prepare: prepare the SQL-Statement
-                                    $PDOStatement = $PDO -> prepare($sql);
-                                    
-                                    // Execute: execute the SQL-Statement and include the placeholder
-                                    $PDOStatement -> execute($placeholders);
-                                    // showQuery($PDOStatement);
-                                    
-                                } catch(PDOException $error) {
-if(DEBUG) 		                    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
-                                }
-                        
-                                // Step 4 DB: evaluate the DB-operation and close the DB connection
-                                $rowCount = $PDOStatement -> rowCount();
-
-if(DEBUG_V)	                    echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
-                        
-                                if( $rowCount !== 1 ) {
-                                    // error
-if(DEBUG)	                        echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Deletion failed! <i>(" . basename(__FILE__) . ")</i></p>\n";	
-                        
-                                    // error message for user
-                                    $dbError = 'The blog post could not be deleted. Please contact your admin.';
-
-                                    // error message for admin
-                                    $logError   = 'Error trying to DELETE a BLOG POST to database.';
-
-                                    /******** WRITE TO ERROR LOG ******/
-
-                                    // create file
-
-                                    if( file_exists('./logfiles') === false ) {
-                                        mkdir('./logfiles');
-                                    }
-                        
-                                    // create error message
-
-                                    $logEntry    = "\t<p>";
-                                    $logEntry   .= date('Y-m-d | h:i:s |');
-                                    $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
-                                    $logEntry   .= '<i>' . $logError . '</i>';
-                                    $logEntry   .= "</p>\n";
-
-                                    // write error message to log
-
-                                    file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
-                        
-                                } else {
-                                    // success
-if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog post has been successfully deleted. <i>(" . basename(__FILE__) . ")</i></p>\n";	
-                        
-                                    $dbSuccess = 'The blog post has been successfully deleted.';
-                        
-                                }
-                        
-                                // close DB connection
-                                dbClose($PDO, $PDOStatement);
+                                $alert = "Do you really want to delete the blog post $blogTitleToDelete?";
 
                             } // USER AUTHORIZATION END
 
@@ -1172,20 +1204,36 @@ if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__
 
         <!-- ------------- USER MESSAGE BEGIN ---------------------------------- -->
 
-        <?php if( $dbError !== NULL OR $dbSuccess !== NULL OR $info !== NULL ): ?>
+        <?php if(   $dbError            !== NULL OR 
+                    $dbSuccess          !== NULL OR 
+                    $info               !== NULL OR 
+                    $alert              !== NULL OR 
+                    $dbDeleteError      !== NULL OR  
+                    $dbDeleteSuccess    !== NULL ): ?>
             <popupBox>
                 <!-- Message -->
                 <?php if( $dbError ):?>
                     <h3 class="popup-error"><?= $dbError ?></h3>
                 <?php elseif( $dbSuccess ): ?>
                     <h3 class="popup-success"><?= $dbSuccess ?></h3>
+                <?php elseif( $dbDeleteError ): ?>
+                    <h3 class="popup-error"><?= $dbDeleteError ?></h3>
+                <?php elseif( $dbDeleteSuccess ): ?>
+                    <h3 class="popup-success"><?= $dbDeleteSuccess ?></h3>
                 <?php elseif( $info ): ?>
                     <h3 class="popup-error"><?= $info ?></h3>
+                <?php elseif( $alert ): ?>
+                    <h3 class="popup-success"><?= $alert ?></h3>
                 <?php endif ?>
 
                 <!-- Button -->
                 <?php if( $dbError OR $dbSuccess OR $info ): ?>
                     <a class="button" onclick="document.getElementsByTagName('popupBox')[0].style.display = 'none'">Okay</a>
+                <?php elseif( $alert ): ?>
+                    <a class="button" href="?action=cancelDelete">Cancel</a>
+                    <a class="button" href="?action=delete">Delete Post</a>
+                <?php elseif( $dbDeleteError OR $dbDeleteSuccess ): ?>
+                    <a class="button" href="?action=okay">Okay</a>
                 <?php endif ?>
             </popupBox> 
         <?php endif ?>
