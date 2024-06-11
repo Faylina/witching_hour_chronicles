@@ -1,0 +1,6 @@
+include/config.inc.php
+include/template_debugging.php
+include/debugging_for_copying.php
+logfiles/
+_sql/
+uploaded_images/

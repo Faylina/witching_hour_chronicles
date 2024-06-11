@@ -10,7 +10,7 @@
 				#********** DATABASE CONFIGURATION *********************************#
 				define('DB_SYSTEM',							'mysql');
 				define('DB_HOST',							'localhost');
-				define('DB_NAME',							'blogprojekt');
+				define('DB_NAME',							'coding_sorceress');
 				define('DB_USER',							'root');
 				define('DB_PWD',							'');
 				
@@ -35,11 +35,13 @@
 				
 				
 				#********** DEBUG CONFIGURATION ************************************#
-				define('DEBUG', 							true);			// Debugging for main documents
-				define('DEBUG_V', 							true);			// Debugging for values
-				define('DEBUG_A', 							true);			// Debugging for arrays				
-				define('DEBUG_F', 							true);			// Debugging for functions
-				define('DEBUG_DB', 							true);			// Debugging for DB operations					
+				define('DEBUG', 							false);			// Debugging for main documents
+				define('DEBUG_V', 							false);			// Debugging for values
+				define('DEBUG_A', 							false);			// Debugging for arrays				
+				define('DEBUG_F', 							false);			// Debugging for functions
+				define('DEBUG_DB', 							false);			// Debugging for DB operations	
+				define('DEBUG_O', 							false);			// Debugging for objects	
+				define('DEBUG_C', 							false);			// Debugging for classes	
+				define('DEBUG_CC', 							false);			// Debugging for class constructors						
 		
-
 #**********************************************************************************#

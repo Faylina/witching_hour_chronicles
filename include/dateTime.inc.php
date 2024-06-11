@@ -23,7 +23,7 @@
 
 				function isoToEuDateTime($value) {
 
-//if(DEBUG_F)		echo "<p class='debug dateTime'>🌀 <b>Line " . __LINE__ . "</b>: Aufruf " . __FUNCTION__ . "('$value') <i>(" . basename(__FILE__) . ")</i></p>\n";			
+					debugFunction('isoToEuDateTime', __FUNCTION__);		
 					
 					if($value) {
 						
@@ -106,8 +106,9 @@ if(DEBUG_F)			echo "</pre>";
 				* 	@return String 						ISO-date
 				*
 				*/
+
 				function toIsoDate($value) {
-if(DEBUG_F)		echo "<p class='debug dateTime'>🌀 <b>Line " . __LINE__ . "</b>: Aufruf " . __FUNCTION__ . "() <i>(" . basename(__FILE__) . ")</i></p>\n";
+					debugFunction('toIsoDate', __FUNCTION__);
 					
 					if( $value ) {
 						// possible input-formats
@@ -118,32 +119,32 @@ if(DEBUG_F)		echo "<p class='debug dateTime'>🌀 <b>Line " . __LINE__ . "</b>: 
 						
 						// check received date-format
 						if( stripos($value, ".") ) {
-if(DEBUG_F)				echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): The received date is in a EU-format. <i>(" . basename(__FILE__) . ")</i></p>\r\n";
+//if(DEBUG_F)				echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): The received date is in a EU-format. <i>(" . basename(__FILE__) . ")</i></p>\r\n";
 							
-							$dateArray = explode(".", $value);					
+							$dateArray 	= explode(".", $value);					
 							$day 		= $dateArray[0];
-							$month 	= $dateArray[1];
-							$year 	= $dateArray[2];
+							$month 		= $dateArray[1];
+							$year 		= $dateArray[2];
 							
 						} elseif( stripos($value, "/") ) {
-if(DEBUG_F)				echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): The received date is in a US-format. <i>(" . basename(__FILE__) . ")</i></p>\r\n";
+//if(DEBUG_F)				echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): The received date is in a US-format. <i>(" . basename(__FILE__) . ")</i></p>\r\n";
 							
-							$dateArray = explode("/", $value);					
+							$dateArray 	= explode("/", $value);					
 							$day 		= $dateArray[1];
-							$month 	= $dateArray[0];
-							$year 	= $dateArray[2];
+							$month 		= $dateArray[0];
+							$year 		= $dateArray[2];
 							
 						} elseif( stripos($value, "-") ) {
-if(DEBUG_F)				echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): The received date is in a ISO-format. <i>(" . basename(__FILE__) . ")</i></p>\r\n";
+//if(DEBUG_F)				echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): The received date is in a ISO-format. <i>(" . basename(__FILE__) . ")</i></p>\r\n";
 							
-							$dateArray = explode("-", $value);
+							$dateArray 	= explode("-", $value);
 							$day 		= $dateArray[2];
-							$month 	= $dateArray[1];
-							$year 	= $dateArray[0];						
+							$month 		= $dateArray[1];
+							$year 		= $dateArray[0];						
 						}
 						
 						$isoDate = "$year-$month-$day";
-if(DEBUG_F)			echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): \$isoDate: $isoDate <i>(" . basename(__FILE__) . ")</i></p>\r\n";
+//if(DEBUG_F)			echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): \$isoDate: $isoDate <i>(" . basename(__FILE__) . ")</i></p>\r\n";
 						
 						return $isoDate;	
 						
@@ -166,8 +167,9 @@ if(DEBUG_F)			echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " 
 				*	@return Boolean 			- false for wrong format or invalid date; otherwise true
 				*
 				*/
+
 				function validateDate($value) {
-if(DEBUG_F)		echo "<p class='debug dateTime'>🌀 <b>Line " . __LINE__ . "</b>: Aufruf " . __FUNCTION__ . "() <i>(" . basename(__FILE__) . ")</i></p>\n";						
+					debugFunction('validateDate', __FUNCTION__);					
 					
 					$day 	= NULL;
 					$month 	= NULL;
@@ -201,10 +203,11 @@ if(DEBUG_F)		echo "<p class='debug dateTime'>🌀 <b>Line " . __LINE__ . "</b>: 
 							$month 	= $dateArray[0];
 							$year 	= $dateArray[2];
 						}
-
+/*
 if(DEBUG_F)			echo "<pre class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): <i>(" . basename(__FILE__) . ")</i>:<br>\r\n";					
 if(DEBUG_F)			print_r($dateArray);					
-if(DEBUG_F)			echo "</pre>";						
+if(DEBUG_F)			echo "</pre>";		
+*/				
 					}
 									
 					/*

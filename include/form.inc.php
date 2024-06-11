@@ -19,8 +19,7 @@
 				*/
 
 				function sanitizeString($value) {
-					
-if(DEBUG_F)		echo "<p class='debug sanitizeString'>🌀 <b>Line " . __LINE__ . "</b>: Invoking " . __FUNCTION__ . "('$value') <i>(" . basename(__FILE__) . ")</i></p>\n";
+					debugFunction('sanitizeString', __FUNCTION__);
 					
 					/*
 						Since in PHP no call to PHP's own functions with NULL values will be allowed in the future, we only call the PHP functions if $value is NOT NULL. For DB operations, NULL should not be overwritten with an empty string. Therefore, at this point, an empty string is replaced by NULL.
@@ -229,11 +228,11 @@ if(DEBUG_F)		echo "<p class='debug validateImageUpload'>🌀 <b>Line " . __LINE_
 
 						- File size: The size of the image file in bytes or kilobytes is included in most file headers. This is important for storage management and file reading.
 
-						- Image dimensions: Information about the width and height of the image in pixels is critical to ensure the proper display of the image. These informations are almost always present in the file header.
+						- Image dimensions: Information about the width and height of the image in pixels is critical to ensure the proper display of the image. This data is almost always present in the file header.
 
 						- Color depth: The color depth specifies how many colors per pixel can be displayed in the image. In RGB images, the usual color depth is 24 bits (8 bits per channel), which corresponds to 16.7 million colors. This is a fundamental information in the header.
 											  
-						  These informations are present in most commonly used image formats and are considered mandatory information in the file header.
+						  This data is present in most commonly used image formats and are considered mandatory information in the file header.
 					*/
 					/*
 						The function getimagesize() reads the file header of an image file and returns a mixed array with valid MIME type ('image/...'):
@@ -338,7 +337,7 @@ if(DEBUG_F)			echo "<p class='debug validateImageUpload'><b>Line " . __LINE__ . 
 										
 					
 					#*************************************************************#
-					#********** 3. PREPARE IMAGE FOR PERSISTANT STORAGE **********#
+					#********** 3. PREPARE IMAGE FOR PERSISTENT STORAGE **********#
 					#*************************************************************#
 					
 					#********** GENERATE UNIQUE FILE NAME **********#
@@ -355,6 +354,7 @@ if(DEBUG_F)			echo "<p class='debug validateImageUpload'><b>Line " . __LINE__ . 
 							from which the decimal separator and space are removed for URL-compliant representation.
 					*/
 					$fileName = mt_rand() . str_shuffle('abcdefghijklmnopqrstuvwxyz__--0123456789') . str_replace('.', '', microtime(true));
+					
 if(DEBUG_F)		echo "<p class='debug hint validateImageUpload'><b>Line " . __LINE__ . "</b>: \$fileName: $fileName <i>(" . basename(__FILE__) . ")</i></p>\n";
 					
 					
@@ -375,7 +375,7 @@ if(DEBUG_F)		echo "<p class='debug value hint validateImageUpload'><b>Line " . _
 if(DEBUG_F)		echo "<p class='debug value hint validateImageUpload'><b>Line " . __LINE__ . "</b>:\$fileTarget: $fileTarget <i>(" . basename(__FILE__) . ")</i></p>\n";
 if(DEBUG_F)		echo "<p class='debug validateImageUpload value'><b>Line " . __LINE__ . "</b>: Path length: " . strlen($fileTarget) . " characters <i>(" . basename(__FILE__) . ")</i></p>\n";
 					
-					// 3. PREPARE IMAGE FOR PERSISTANT STORAGE END
+					// 3. PREPARE IMAGE FOR PERSISTENT STORAGE END
 					#********************************************************#
 					
 					
@@ -387,7 +387,7 @@ if(DEBUG_F)		echo "<p class='debug validateImageUpload value'><b>Line " . __LINE
 						// 6. error (image cannot be moved)
 if(DEBUG_F)			echo "<p class='debug err validateImageUpload'><b>Line " . __LINE__ . "</b>: ERROR attempting to move the image to <i>'$fileTarget'</i>! <i>(" . basename(__FILE__) . ")</i></p>\n";				
 						// TODO: entry into the error log - email to the admin
-						return array('imagePath' => NULL, 'imageError' => 'An error has occured! Please contact our support.');
+						return array('imagePath' => NULL, 'imageError' => 'An error has occurred! Please contact our support.');
 						
 					} else {
 						// success

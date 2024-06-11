@@ -20,6 +20,7 @@
 				*	@return Object								database connection object
 				*
 				*/
+
 				function dbConnect($DBName=DB_NAME) {
 				
 if(DEBUG_DB)	echo "<p class='debug db'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): Attempt a connection with the database '<b>$DBName</b>'... <i>(" . basename(__FILE__) . ")</i></p>\r\n";					
@@ -28,7 +29,6 @@ if(DEBUG_DB)	echo "<p class='debug db'><b>Line " . __LINE__ .  "</b> | " . __MET
 					// trying to establish a database connection
 					try {
 						
-						// $PDO = new PDO("mysql:host=localhost; dbname=blogprojekt; charset=utf8mb4", "root", "");
 						$PDO = new PDO(DB_SYSTEM . ":host=" . DB_HOST . "; dbname=$DBName; charset=utf8mb4", DB_USER, DB_PWD);
 						
 						$PDO->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
@@ -55,12 +55,12 @@ if(DEBUG_DB)	echo "<p class='debug db ok'><b>Line " . __LINE__ .  "</b> | " . __
 				*	Closes an active DB connection and sends a debug message
 				*
 				*	@param	PDO	&$PDO					Reference of given argument PDO object
-				*	@param	PDO	&$PDOStamenet			Reference of given argument PDOStatement object
+				*	@param	PDO	&$PDOStatement			Reference of given argument PDOStatement object
 				*
 				*	return void
 				*/
 				
-				function dbClose(&$PDO, &$PDOStatement) {					
+				function dbClose(&$PDO, &$PDOStatement=NULL) {					
 if(DEBUG_DB)	echo "<p class='debug db'>🌀 <b>Line  " . __LINE__ .  "</b>: Invoking " . __FUNCTION__ . "() <i>(" . basename(__FILE__) . ")</i></p>\r\n";
 					
 					$PDO = $PDOStatement = NULL;

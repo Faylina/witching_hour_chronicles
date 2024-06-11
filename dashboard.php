@@ -159,7 +159,9 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                         // 3. Fallback in case of an error: end processing of the script
                         exit();
 
+
                     #*************** DELETION **************#
+
                     } elseif( $action === 'delete') {
 
                         // fetch the blogID of the post to be deleted
@@ -242,6 +244,9 @@ if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>
                         
                         // close DB connection
                         dbClose($PDO, $PDOStatement);
+
+
+                    #*************** CONFIRMATIONS **************#
                     
                     } elseif( $action === 'cancelDelete' OR $action = 'okay') {
 
@@ -956,7 +961,7 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
                                 // success
 if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog article has been successfully updated. <i>(" . basename(__FILE__) . ")</i></p>\n";
 
-                                $dbSuccess = 'Your blog article has been updated.'; 
+                                $dbSuccess = 'Your blog post has been updated.'; 
 
                             } // UPLOAD DATA TO DATABASE END
 
@@ -1081,10 +1086,15 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                     
                         // PROCESS OPERATIONS
 
+                        #************ VIEW POST ************************#
+
                         if( $operation === 'view' ) {
 if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Showing blog post... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                             $showView = true; 
+
+
+                        #************ START EDITING PROCESS *************#
 
                         } elseif( $operation === 'edit' ) {
 if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Starting editing process... <i>(" . basename(__FILE__) . ")</i></p>\n";
@@ -1114,6 +1124,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                                 $showEdit = true;
                             }
 
+                         #************ START DELETION PROCESS *************#
 
                         } elseif( $operation === 'delete' ) {
 if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Starting deletion process... <i>(" . basename(__FILE__) . ")</i></p>\n";
@@ -1135,7 +1146,7 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
                                 // the user is not the author of the chosen blog post -> deletion is prevented
 if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The blog post was not deleted because the user is not the author. <i>(" . basename(__FILE__) . ")</i></p>\n";
 
-                                $info = 'You have no permission to edit this post.';
+                                $info = 'You have no permission to delete this post.';
 
                             } else {
                                 // the user is the author of the chosen blog post -> deletion is allowed
