@@ -20,6 +20,13 @@
 						echo "<p class='debug'><b>Line " . __LINE__ . "</b>: $occurrence . <i>(" . basename(__FILE__) . ")</i></p>\n";
 					}
 				}
+
+				#********** Authentification: **********#
+				function debugAuth($message) {
+					if(DEBUG) {
+						echo "<p class='debug auth'><b>Line " . __LINE__ . "</b>:" . $message . "<i>(" . basename(__FILE__) . ")</i></p>\n";
+					}
+				}
 			
 				
 #********************************************************************************************#

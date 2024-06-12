@@ -10,7 +10,7 @@
 				#********** DATABASE CONFIGURATION *********************************#
 				define('DB_SYSTEM',							'mysql');
 				define('DB_HOST',							'localhost');
-				define('DB_NAME',							'coding_sorceress');
+				define('DB_NAME',							'blogprojekt');
 				define('DB_USER',							'root');
 				define('DB_PWD',							'');
 				
