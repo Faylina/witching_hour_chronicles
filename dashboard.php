@@ -125,22 +125,19 @@
 				#*****************************************#
 
                 #******** PREVIEW URL PARAMETERS *********#
-/*
-if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_GET <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	    print_r($_GET);					
-if(DEBUG_A)	    echo "</pre>";
-*/
-                // Step 1 URL: Check whether the parameters have been sent
+                debugArray('_GET', $_GET);
+				
+				// Step 1 URL: Check whether the parameters have been sent
 
                 if( isset($_GET['action']) === true ) {
-if(DEBUG)		    echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The URL-parameter 'action' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";				
-                    // Step 2 URL: Read, sanitize and output URL data
-                    
-if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The URL parameters are being read and sanitized... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugProcessStart("URL-parameter 'action' has been committed.");
+								
+					// Step 2 URL: Read, sanitize and output URL data
+					debugProcessStart('The URL parameters are being read and sanitized...');
     
                     $action = sanitizeString($_GET['action']);
                     
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$action: $action <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugVariable('action', $action);
                     
                     // Step 3 URL: Branching
                     
@@ -148,11 +145,9 @@ if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \
                     
                     if( $action === 'logout') {
                     
-if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The user is being logged out... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        debugProcessStart('Logging out...');
                     
                         // Step 4 URL: processing data
-                    
-if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Processing data... <i>(" . basename(__FILE__) . ")</i></p>\n";
                     
                         // 1. Delete session file
                         session_destroy();
@@ -272,47 +267,42 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
 #*************************************************************************#
 
 
-				#****************************************#
-				#******** PROCESS CATEGORY FORM *********#
-				#****************************************#
+				#**********************************************#
+				#******** PROCESS FORM 'NEW CATEGORY' *********#
+				#**********************************************#
 
                 #******** PREVIEW POST ARRAY ************#
-/*
-if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_POST <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	print_r($_POST);					
-if(DEBUG_A)	echo "</pre>";
-*/
+
+                debugArray('_POST', $_POST);
 
                 // Step 1 FORM: Check whether the form has been sent
 
                 if( isset($_POST['categoryForm']) === true ) {
-if(DEBUG)		    echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The form 'categoryForm' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";									
+                    debugProcessStart('The form "formNewCategory" has been sent.');								
 
                     // Step 2 FORM: Read, sanitize and output form data
-
-if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The form data is being read and sanitized... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugProcessStart('Reading and sanitizing form data...');
 
                     $newCategory = sanitizeString($_POST['b5']);
 
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$newCategory: $newCategory <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugVariable('newCategory', $newCategory);
 
                     // Step 3 FORM: Field validation
+                    debugProcessStart('Validating fields...');
 
-if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating fields... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    $errorCategory = validateInputString( $newCategory, maxLength:50 );
 
-                    $errorCategory = validateInputString( $newCategory, minLength:1, maxLength:20 );
-
-                    // FINAL FORM VALIDATION
+                    #********** FINAL FORM VALIDATION **********#
 
                     if( $errorCategory !== NULL ) {
                         // error
-if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                        debugError('The form contains errors!');
 
                         $errorCategory = 'Please enter a category of up to 256 characters.';
 
                     } else {
                         // success
-if(DEBUG)	            echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The form is formally free of errors. <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        debugSuccess('The form is formally free of errors.');
 
                         // Step 4 FORM: data processing
 
@@ -322,15 +312,17 @@ if(DEBUG)	            echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Th
 
                         // Step 1 DB: Connect to database
 
-                        $PDO = dbConnect('blogprojekt');
+                        $PDO = dbConnect();
 
                         #************ 1. CHECK WHETHER CATEGORY ALREADY EXISTS IN DB *************#
 
-if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Checking whether the category exists in the database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        debugProcessStart('Checking whether the category exists in the database...');
 
                         // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
-                        $sql = 'SELECT COUNT(catLabel) FROM categories WHERE catLabel = :catLabel';
+                        $sql = 'SELECT COUNT(catLabel) 
+                                FROM categories 
+                                WHERE catLabel = :catLabel';
 
                         $placeholders = array('catLabel' => $newCategory );
 
@@ -345,32 +337,33 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                             // showQuery($PDOStatement);
                             
                         } catch(PDOException $error) {
-if(DEBUG) 		            echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                            debugErrorDB($error);										
                         }
 
                         // Step 4 DB: evaluate the DB-operation 
 
                         $count = $PDOStatement -> fetchColumn();
 
-if(DEBUG_V)	            echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$count: $count <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        debugVariable('count', $count);
 
                         if( $count !== 0 ) {
                             // error
-if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The category already exists in the database! <i>(" . basename(__FILE__) . ")</i></p>\n";
+                            debugError("This category already exists.");
 
                             $errorCategory = 'This category already exists.';
 
                         } else {
                             // success
-if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The category does not exist in the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                            debugSuccess("This category does not exist in the database yet.");
 
                             #************ 2. SAVE THE CATEGORY TO DB *************#
 
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Saving category to the database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                            debugProcessStart('Saving category to database...');
 
                             // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
-                            $sql = 'INSERT INTO categories (catLabel) VALUES (:catLabel)';
+                            $sql = 'INSERT INTO categories (catLabel) 
+                                    VALUES (:catLabel)';
 
                             $placeholders = array('catLabel' => $newCategory);
 
@@ -385,25 +378,25 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
                                 // showQuery($PDOStatement);
                                 
                             } catch(PDOException $error) {
-if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                                debugErrorDB($error);										
                             }
 
                             // Step 4 DB: evaluate the DB-operation
 
                             $rowCount = $PDOStatement -> rowCount();
 
-if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
+                            debugObject('rowCount', $rowCount);
 
                             if( $rowCount !== 1 ) {
                                 // error
-if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Error when attempting to save $rowCount category! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                                debugErrorDB("Error when attempting to save $rowCount category!");
                                 
                                 // error message for user
                                 $dbError    = 'The category could not be saved. Please try again later.'
                                 ;
 
                                 // error message for admin
-                                $logError   = 'Error trying to SAVE a CATEGORY to database.';
+                                $logError   = 'Error trying to SAVE a new CATEGORY to database.';
 
                                 /******** WRITE TO ERROR LOG ******/
 
@@ -425,13 +418,13 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
 
                                 file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
 
-
                             } else {
                                 // success
-if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount category was saved to the database. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                                debugSuccess("$rowCount category was saved to the database.");
 
                                 $dbSuccess = "The new category $newCategory has been saved.";
 
+                                // clear the form
                                 $newCategory = NULL;
 
                             } // 2. SAVE THE CATEGORY TO DB END
