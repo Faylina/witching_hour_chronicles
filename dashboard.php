@@ -10,6 +10,7 @@
                 require_once('./include/form.inc.php');
                 require_once('./include/db.inc.php');
                 require_once('./include/dateTime.inc.php');
+                require_once('./include/debugging.inc.php');
 
 #*************************************************************************#
 				
@@ -69,48 +70,51 @@
 
                 #************ START / CONTINUE SESSION ***********#
 
-                session_start();
-/*
-if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_SESSION <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	    print_r($_SESSION);					
-if(DEBUG_A)	    echo "</pre>";
-*/
+                if( session_start() === false ) {
+					// error
+					debugError('Error starting the session.');			
+									
+				} else {
+					// success
+					debugSuccess('The session has been started successfully.');	
 
-                #****************************************#
-				#******** CHECK FOR VALID LOGIN *********#
-				#****************************************#
+                    #****************************************#
+                    #******** CHECK FOR VALID LOGIN *********#
+                    #****************************************#
 
-                if( isset($_SESSION['ID']) === false OR $_SESSION['IPAddress'] !== $_SERVER['REMOTE_ADDR'] ) {
-                    // error
-if(DEBUG)	        echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Login could not be validated! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                    if( isset($_SESSION['ID']) === false OR $_SESSION['IPAddress'] !== $_SERVER['REMOTE_ADDR'] ) {
+                        // error
+                        debugAuth('User is not logged in.');
 
-                    #************ DENY PAGE ACCESS ***********#
+                        #************ DENY PAGE ACCESS ***********#
 
-                    // 1. Delete session file
-                    session_destroy();
+                        // 1. Delete session file
+                        session_destroy();
 
-                    // 2. Redirect to homepage
-                    header('LOCATION: index.php');
+                        // 2. Redirect to homepage
+                        header('LOCATION: index.php');
 
-                    // 3. Fallback in case of an error: end processing of the script
-                    exit();
+                        // 3. Fallback in case of an error: end processing of the script
+                        exit();
 
-                #************ VALID LOGIN ***********#
-                } else {
-                    // success
-if(DEBUG)	        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Valid login. <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    #************ VALID LOGIN ***********#
+                    } else {
+                        // success
+                        debugAuth('Valid login.');	
 
-                    #************ GENERATE NEW SESSION ID ***********#
-                    session_regenerate_id(true);
+                        #************ GENERATE NEW SESSION ID ***********#
+                        session_regenerate_id(true);
 
-                    $userID         = $_SESSION['ID'];
-                    $userFirstName  = $_SESSION['firstName'];
-                    $userLastName   = $_SESSION['lastName'];
+                        $userID         = $_SESSION['ID'];
+                        $userFirstName  = $_SESSION['firstName'];
+                        $userLastName   = $_SESSION['lastName'];
 
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$userID: $userID <i>(" . basename(__FILE__) . ")</i></p>\n";
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$userFirstName: $userFirstName <i>(" . basename(__FILE__) . ")</i></p>\n";
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$userLastName: $userLastName <i>(" . basename(__FILE__) . ")</i></p>\n";
-                }         
+                        debugVariable('userID', $userID );
+                        debugVariable('userFirstName', $userFirstName );
+                        debugVariable('userLastName', $userLastName );
+                        
+                    }     
+                }    
             
 
 #*************************************************************************#
@@ -1177,7 +1181,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <link rel="icon" type="image/x-icon" href="./css/images/favicon.ico">
-        <title>Witching Hour Chronicles - Homepage</title>
+        <title>Witching Hour Chronicles - Dashboard</title>
         <link rel="stylesheet" href="./css/main.css">
 		<link rel="stylesheet" href="./css/debug.css">
     </head>
