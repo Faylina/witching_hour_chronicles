@@ -264,21 +264,20 @@
 
 #*************************************************************************#
 
-				#*******************************************************#
-				#********** FETCH DATA FOR CATEGORIES FROM DB **********#
-				#*******************************************************#
+				#**********************************************#
+				#********** FETCH CATEGORIES FROM DB **********#
+				#**********************************************#
 
                 #****************************************#
 				#************* DB OPERATIONS ************#
 				#****************************************#
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch categories... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                 // Step 1 DB: Connect to database
 
-                $PDO = dbConnect('blogprojekt');
+                $PDO = dbConnect();
 
                 #************ FETCH DATA FROM DB *************#
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching category data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                debugProcessStart('Fetching categories...');
 
                 // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
@@ -297,7 +296,7 @@ if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching
                     // showQuery($PDOStatement);
                     
                 } catch(PDOException $error) {
-if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                    debugErrorDB($error);										
                 }
 
                 // Step 4 DB: evaluate the DB-operation and close the DB connection
@@ -305,11 +304,8 @@ if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERRO
 
                 // close DB connection
                 dbClose($PDO, $PDOStatement);
-/*
-if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$categoryArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	print_r($categoryArray);				
-if(DEBUG_A)	echo "</pre>";
-*/
+
+                debugArray('categoryArray', $categoryArray);
 
 #*************************************************************************#
 
