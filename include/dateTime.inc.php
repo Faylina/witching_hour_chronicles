@@ -99,6 +99,93 @@ if(DEBUG_F)			echo "</pre>";
 
 				/**
 				*
+				*	Transforms the ISO date- / time-format into a US date- / time-format and 
+				*	separates the date from the time (without seconds).
+				*
+				* 	@param String $value								ISO date/time
+				*
+				* 	@return Array (String "date", String "time")		US-date plus time
+				*
+				*/
+
+				function isoToUSDateTime($value) {
+
+					debugFunction('isoToUSDateTime', __FUNCTION__);		
+					
+					if($value) {
+						
+						// possible input-formats
+						// 2018-05-17 14:17:48
+						// 2018-05-17
+						
+						// possible output-formats
+						// 17.05.2018	// 14:17
+						// 17.05.2018
+						
+						// check whether a time is included in $value
+						if( strpos($value, " ") ) {
+
+// if(DEBUG_F)			echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): \$value contains a time. <i>(" . basename(__FILE__) . ")</i></p>\r\n";					
+
+							// separate date and time
+							$dateTimeArray = explode(" ", $value);
+
+							/*
+if(DEBUG_F)				echo "<pre class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): \$dateTimeArray: <i>(" . basename(__FILE__) . ")</i>:<br>\r\n";					
+if(DEBUG_F)				print_r($dateTimeArray);					
+if(DEBUG_F)				echo "</pre>";
+							*/
+							
+							$date = $dateTimeArray[0];
+
+// if(DEBUG_F)			echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): \$date: $date <i>(" . basename(__FILE__) . ")</i></p>\r\n";					
+
+							// disassemble the date into its parts (day, month, year)
+							$dateArray 	= explode("-", $date);
+
+							$time = $dateTimeArray[1];
+							// remove the seconds
+							$time 		= substr($time, 0, 5);
+
+// if(DEBUG_F)			echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): \$time: $time <i>(" . basename(__FILE__) . ")</i></p>\r\n";					
+
+						} else {
+
+// if(DEBUG_F)			echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): \$value does not contain a time. <i>(" . basename(__FILE__) . ")</i></p>\r\n";			
+
+							// disassemble the date into its parts (day, month, year)
+							$dateArray 	= explode("-", $value);
+							$time 		= NULL;
+						}
+
+						/*				
+if(DEBUG_F)			echo "<pre class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): \$dateTimeArray: <i>(" . basename(__FILE__) . ")</i>:<br>\r\n";					
+if(DEBUG_F)			print_r($dateArray);					
+if(DEBUG_F)			echo "</pre>";
+						*/
+
+						// reformat the date
+						$usDate = "$dateArray[1]/$dateArray[2]/$dateArray[0]";					
+
+// if(DEBUG_F)		echo "<p class='debug dateTime'><b>Line " . __LINE__ .  "</b> | " . __METHOD__ . "(): \$euDate: $euDate <i>(" . basename(__FILE__) . ")</i></p>\r\n";					
+																	
+					} else {
+						
+						// write NULL-values to the array indices 
+						$usDate 	= NULL;
+						$time 		= NULL;						
+					}
+					
+					// return date and time separately 
+					return array("date"=>$usDate, "time"=>$time);					
+				}
+
+
+#**********************************************************************************#
+
+
+				/**
+				*
 				*	Transforms a EU/US/ISO-date-format into an ISO-date-format
 				*
 				* 	@param String 						EU/US/ISO-date

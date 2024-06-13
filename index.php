@@ -272,12 +272,11 @@
 				#************* DB OPERATIONS ************#
 				#****************************************#
 
+                debugProcessStart('Fetching categories...');
+
                 // Step 1 DB: Connect to database
 
                 $PDO = dbConnect();
-
-                #************ FETCH DATA FROM DB *************#
-                debugProcessStart('Fetching categories...');
 
                 // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
@@ -380,15 +379,11 @@
                 #*************************************************#
 				#***************** DB OPERATIONS *****************#
 				#*************************************************#
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch blog article data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                debugProcessStart("Fetching blog posts from database...");	
 
                 // Step 1 DB: Connect to database
 
-                $PDO = dbConnect('blogprojekt');
-
-                #************ FETCH DATA FROM DB *************#
-
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching blog data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                $PDO = dbConnect();
 
                 // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
@@ -427,7 +422,7 @@ if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching
                     // showQuery($PDOStatement);
                     
                 } catch(PDOException $error) {
-if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                    debugErrorDB($error);									
                 }
 
                 // Step 4 DB: evaluate the DB-operation and close the DB connection
@@ -435,11 +430,8 @@ if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERRO
 
                 // close DB connection
                 dbClose($PDO, $PDOStatement);
-/*
-if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$blogArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	    print_r($blogArray);				
-if(DEBUG_A)	    echo "</pre>";
-*/
+
+                debugArray('blogArray', $blogArray);
 
 #*************************************************************************#
 ?>
@@ -520,35 +512,41 @@ if(DEBUG_A)	    echo "</pre>";
 
             <div class="blog">
 
-                <!-- -------- Generate blog articles ---------- -->
-                <?php foreach( $blogArray AS $value): ?>
+                <?php if( empty($blogArray) === true ): ?>
+					<p>No blog posts have been written yet. Get creative!</p>
+				
+				<?php else: ?>
 
-                    <!-- Convert ISO time from DB to EU time and split into date and time -->
-                    <?php $dateArray = isoToEuDateTime( $value['blogDate'] ) ?>
+                    <!-- -------- Generate blog articles ---------- -->
+                    <?php foreach( $blogArray AS $value): ?>
 
-                    <!-- Blog header -->
-                    <div class="blog-category">Category: <?= $value['catLabel'] ?></div>
-                    <div class="blog-title"><?= $value['blogHeadline'] ?></div>
-                    <div class="blog-meta">
-                        <?= $value['userFirstName'] ?> <?= $value['userLastName'] ?> (<?= $value['userCity'] ?>) 
-                        wrote on <?= $dateArray['date'] ?> at <?= $dateArray['time'] ?> o'clock:
-                    </div>
+                        <!-- Convert ISO time from DB to EU time and split into date and time -->
+                        <?php $dateArray = isoToUSDateTime( $value['blogDate'] ) ?>
 
-                    <!-- Blog content -->
-                    <div class="container clearfix">
-                        <!-- Prevent empty images from displaying --> 
-                        <?php if( $value['blogImagePath'] !== NULL ): ?>
-                            <img class="<?= $value['blogImageAlignment']?>" src="<?= $value['blogImagePath']?>" alt="image for the blog article">
-                        <?php endif ?>
+                        <!-- Blog header -->
+                        <div class="blog-category">Category: <?= $value['catLabel'] ?></div>
+                        <div class="blog-title"><?= $value['blogHeadline'] ?></div>
+                        <div class="blog-meta">
+                            <?= $value['userFirstName'] ?> <?= $value['userLastName'] ?> (<?= $value['userCity'] ?>) 
+                            wrote on <?= $dateArray['date'] ?> at <?= $dateArray['time'] ?> o'clock:
+                        </div>
 
-                        <div class="blog-content"><?php echo nl2br( $value['blogContent'] ) ?></div>
-                    </div>
+                        <!-- Blog content -->
+                        <div class="container clearfix">
+                            <!-- Prevent empty images from displaying --> 
+                            <?php if( $value['blogImagePath'] !== NULL ): ?>
+                                <img class="<?= $value['blogImageAlignment']?>" src="<?= $value['blogImagePath']?>" alt="image for the blog article">
+                            <?php endif ?>
 
-                    <br>
-                    <hr>
-                    <br>
+                            <div class="blog-content"><?php echo nl2br( $value['blogContent'] ) ?></div>
+                        </div>
 
-                <?php endforeach ?>
+                        <br>
+                        <hr>
+                        <br>
+
+                    <?php endforeach ?>
+                <?php endif ?>
             </div>
             <!-- ------------- BLOG END ------------------------------------ -->
 
