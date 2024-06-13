@@ -314,34 +314,29 @@
 				#***********************************************#
 
                 #******** PREVIEW URL PARAMETERS ***************#
-/*
-if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_GET <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	    print_r($_GET);					
-if(DEBUG_A)	    echo "</pre>";
-*/
+
+                debugArray('_GET', $_GET);
 
                 // Step 1 URL: Check whether the parameters have been sent
 
                 if( isset($_GET['action']) === true ) {
-if(DEBUG)		    echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The URL-parameter 'action' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";				
+                    debugProcessStart("URL-parameter 'action' has been committed.");
+		
                     // Step 2 URL: Read, sanitize and output URL data
-                    
-if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The URL parameters are being read and sanitized... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugProcessStart('The URL parameters are being read and sanitized...');
                     
                     $action = sanitizeString($_GET['action']);
                     
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$action: $action <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugVariable('action', $action);
 
                     // Step 3 URL: Branching
                 
                     #*************** LOGOUT **************#
                     if( $action === 'logout') {
                     
-if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The user is being logged out... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        debugProcessStart('Logging out...');
                     
                         // Step 4 URL: processing data
-                    
-if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Processing data... <i>(" . basename(__FILE__) . ")</i></p>\n";
                     
                         // 1. Delete session file
                         session_destroy();
@@ -355,23 +350,21 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                     #*************** FILTER BY CATEGORY **************#
                     } elseif( $action === 'filterByCategory') {
 
-if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The blog articles are being filtered by category... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        debugProcessStart("The blog posts are being filtered by category...");	
 
-                        #********* PROCESS CATID PARAMETER ********#
-
-                        // Check whether the parameter has been sent
+                        #********* PROCESS CAT ID PARAMETER ********#
 
                         if( isset($_GET['catID']) === true ) {
-if(DEBUG)		            echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The URL-parameter 'catID' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";				
+                            debugProcessStart("URL-parameter 'catID' has been committed.");		
+
                             // Read, sanitize and output URL data
-                                        
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The URL parameters are being read and sanitized... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                            debugProcessStart('The URL parameters are being read and sanitized...');        
                                         
                             $filterID = sanitizeString($_GET['catID']);
-                                        
-if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$filterID: $filterID <i>(" . basename(__FILE__) . ")</i></p>\n";
+
+                            debugVariable('filterID', $filterID);
                     
-                        } // PROCESS CATID PARAMETER END
+                        } // PROCESS CAT ID PARAMETER END
 
                     } // BRANCHING END 
 
@@ -564,9 +557,16 @@ if(DEBUG_A)	    echo "</pre>";
 
             <div class="categories">
                 <div class="blog-title">Categories</div>
-                <?php foreach( $categoryArray AS $value ): ?>
-                    <a href="?action=filterByCategory&catID=<?= $value['catID'] ?>"><?= $value['catLabel'] ?></a>
-                <?php endforeach ?>
+                <?php if( empty($categoryArray) === true ): ?>
+					<p>There are no categories yet. Go ahead and create some. :&#41;</p>
+			
+				<?php else: ?>
+                    <?php foreach( $categoryArray AS $value ): ?>
+                        <a href="?action=filterByCategory&catID=<?= $value['catID'] ?>"
+                        <?php if( $value['catID'] == $filterID ) echo 'class="active"' ?>>
+                            <?= $value['catLabel'] ?></a>
+                    <?php endforeach ?>
+                <?php endif ?>
             </div>
 
             <!-- ------------- CATEGORIES END ------------------------------ -->
