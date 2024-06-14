@@ -1058,6 +1058,15 @@ if(DEBUG_A)	echo "</pre>";
                     
                     $errorChosenBlog    = validateInputString($chosenBlog, maxLength:11);
                     $errorOperation     = validateInputString($operation, minLength:4, maxLength:6);
+
+                    #********** WHITELISTING OPERATION **********#
+
+					if(	$operation !== 'view' AND 
+                        $operation !== 'edit' AND 
+                        $operation !== 'delete') 
+                    {
+                        $errorOperation = 'This is not a valid operation.';
+                    }
                     
 
                     #********** FINAL FORM VALIDATION **********#
