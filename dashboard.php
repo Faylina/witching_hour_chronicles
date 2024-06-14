@@ -1036,55 +1036,46 @@ if(DEBUG_A)	echo "</pre>";
 				#********************************************#
 
                 #******** PREVIEW POST ARRAY ****************#
-/*
-if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_POST <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	print_r($_POST);					
-if(DEBUG_A)	echo "</pre>";
-*/
+
+                debugArray('_POST', $_POST);
 
                 // Step 1 FORM: Check whether the form has been sent
 
                 if( isset($_POST['previousPostsForm']) === true ) {
-if(DEBUG)		    echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The form 'previousPostsForm' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";									
-                                            
-                    // Step 2 FORM: Read, sanitize and output form data
-                        
-if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Reading and sanitizing form data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugProcessStart('The form "previousPostsForm" has been sent.');
+					
+					// Step 2 FORM: Read, sanitize and output form data
+					debugProcessStart('Reading and sanitizing form data...');
                     
                     $chosenBlog     = sanitizeString($_POST['b6']);
                     $operation      = sanitizeString($_POST['b7']);
 
-                    
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$chosenBlog: $chosenBlog <i>(" . basename(__FILE__) . ")</i></p>\n";
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$operation: $operation <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugVariable('chosenBlog', $chosenBlog);
+                    debugVariable('operation', $operation);
                     
                     // Step 3 FORM: Field validation
+                    debugProcessStart('Validating fields...');
                     
-if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating fields... <i>(" . basename(__FILE__) . ")</i></p>\n";
-                    
-                    $errorChosenBlog    = validateInputString($chosenBlog, minLength:1, maxLength:11);
+                    $errorChosenBlog    = validateInputString($chosenBlog, maxLength:11);
                     $errorOperation     = validateInputString($operation, minLength:4, maxLength:6);
                     
-                    // FINAL FORM VALIDATION
+
+                    #********** FINAL FORM VALIDATION **********#
                     
                     if( $errorChosenBlog !== NULL OR $errorOperation !== NULL ) {
                         // error
-if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The edit form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                        debugError('The form contains errors!');
                     
                     } else {
                         //success
-if(DEBUG)	            echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The form is formally free of errors. <i>(" . basename(__FILE__) . ")</i></p>\n";
-                    
+                        debugSuccess('The form is formally free of errors.');	
                     
                         // Step 4 FORM: data processing
-if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The form data is being further processed... <i>(" . basename(__FILE__) . ")</i></p>\n";
-                    
-                        // PROCESS OPERATIONS
 
                         #************ VIEW POST ************************#
 
                         if( $operation === 'view' ) {
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Showing blog post... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                            debugProcessStart('Showing blog post...');
 
                             $showView = true; 
 
@@ -1092,7 +1083,7 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
                         #************ START EDITING PROCESS *************#
 
                         } elseif( $operation === 'edit' ) {
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Starting editing process... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                            debugProcessStart('Starting editing process...');
 
                             #********* USER AUTHORIZATION **********#
 
@@ -1100,6 +1091,7 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
 
                                 // find the blog in the blogArray that was chosen for editing
                                 if ( $value['blogID'] == $chosenBlog ) {
+
                                     // retrieve the user ID of the blog post to be edited
                                     $blogUserID = $value['userID'];
                                 }
@@ -1108,13 +1100,13 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
                             // check whether the user is the author of the blog post
                             if( $blogUserID !== $userID ) {
                                 // the user is not the author of the chosen blog post -> editing is prevented
-if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The user is not the author of this post and may not alter the blog post. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                                debugError('The user is not the author of this post and may not alter the blog post.');	
 
                                 $info = 'You have no permission to edit this post.';
 
                             } else {
                                 // the user is the author of the chosen blog post -> editing is allowed
-if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The user is confirmed to be the author of this post. <i>(" . basename(__FILE__) . ")</i></p>\n";
+                                debugSuccess('The user is confirmed to be the author of this post.');
 
                                 $showEdit = true;
                             }
@@ -1122,7 +1114,7 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
                          #************ START DELETION PROCESS *************#
 
                         } elseif( $operation === 'delete' ) {
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Starting deletion process... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                            debugProcessStart('Starting deletion process...');
 
                             #********* USER AUTHORIZATION **********#
 
@@ -1130,6 +1122,7 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
 
                                 // find the blog in the blogArray that was chosen for deletion
                                 if ( $value['blogID'] == $chosenBlog ) {
+
                                     // retrieve the user ID of the blog post to be deleted
                                     $blogUserID         = $value['userID'];
                                     $blogTitleToDelete  = $value['blogHeadline'];
@@ -1139,16 +1132,16 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
                             // check whether the user is the author of the blog post
                             if( $blogUserID !== $userID ) {
                                 // the user is not the author of the chosen blog post -> deletion is prevented
-if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The blog post was not deleted because the user is not the author. <i>(" . basename(__FILE__) . ")</i></p>\n";
+                                debugError('The blog post was not deleted because the user is not the author.');	
 
                                 $info = 'You have no permission to delete this post.';
 
                             } else {
                                 // the user is the author of the chosen blog post -> deletion is allowed
-if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: The user is confirmed to be the author of this post. <i>(" . basename(__FILE__) . ")</i></p>\n";
+                                debugSuccess('The user is confirmed to be the author of this post.');
 
                                 // store blog ID of the post to be deleted in session
-                                $_SESSION['postToBeDeleted']         = $chosenBlog;
+                                $_SESSION['postToBeDeleted'] = $chosenBlog;
 
                                 $alert = "Do you really want to delete the blog post $blogTitleToDelete?";
 
