@@ -163,6 +163,8 @@
 
                     } elseif( $action === 'delete') {
 
+                        debugProcessStart('Deleting data from database...');
+
                         // fetch the blogID of the post to be deleted
                         $chosenBlog = $_SESSION['postToBeDeleted'];
 
@@ -172,11 +174,8 @@
 
                         // Step 1 DB: Connect to database
 
-                        $PDO = dbConnect('blogprojekt');
+                        $PDO = dbConnect();
 
-                        #************ DELETE DATA FROM DB *************#
-if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Deleting data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
-                        
                         // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
                         $sql = 'DELETE FROM blogs WHERE blogID = :blogID';
@@ -194,20 +193,20 @@ if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: 
                             // showQuery($PDOStatement);
                             
                         } catch(PDOException $error) {
-if(DEBUG) 		            echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                            debugErrorDB($error);									
                         }
                         
                         // Step 4 DB: evaluate the DB-operation and close the DB connection
                         $rowCount = $PDOStatement -> rowCount();
 
-if(DEBUG_V)	            echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        debugVariable('rowCount', $rowCount);
                         
                         if( $rowCount !== 1 ) {
                             // error
-if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Deletion failed! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                            debugErrorDB('Deletion failed!');	
                         
                             // error message for user
-                            $dbDeleteError = 'The blog post could not be deleted. Please contact your admin.';
+                            $dbDeleteError = 'The blog post could not be deleted. Please try again later.';
 
                             // error message for admin
                             $logError   = 'Error trying to DELETE a BLOG POST to database.';
@@ -235,7 +234,7 @@ if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b
                         
                         } else {
                             // success
-if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog post has been successfully deleted. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                            debugSuccess("$rowCount blog post has been successfully deleted.");
                         
                             $dbDeleteSuccess = 'The blog post has been successfully deleted.';
 
@@ -248,14 +247,13 @@ if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>
                     #*************** CONFIRMATIONS **************#
                     
                     } elseif( $action === 'cancelDelete' OR $action = 'okay') {
-
-if(DEBUG)	            echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Reloading page after cancel or confirmation... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        debugProcessStart('Reloading page after cancel or confirmation...');
 
                         // delete blog ID from session
                         $_SESSION['postToBeDeleted'] = '';
 
                         // 2. Reload homepage
-                        header('LOCATION: index.php');
+                        header('LOCATION: dashboard.php');
 
                         // 3. Fallback in case of an error: end processing of the script
                         exit();
