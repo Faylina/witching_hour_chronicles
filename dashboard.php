@@ -489,9 +489,9 @@
 #*************************************************************************#
 
 
-				#******************************************#
-				#******** PROCESS BLOG POST FORM **********#
-				#******************************************#
+				#************************************************#
+				#******** PROCESS FORM 'NEW BLOG POST' **********#
+				#************************************************#
 
                 #******** PREVIEW POST ARRAY ************#
 
@@ -704,7 +704,7 @@
 
                     } // FINAL FORM VALIDATION 1 END
 
-                } // PROCESS ARTICLE FORM END
+                } // PROCESS FORM 'NEW BLOG POST' END
 
 #*************************************************************************#
 
@@ -715,23 +715,16 @@
 				#****************************************#
 
                 #********** PREVIEW POST ARRAY **********#
-/*
-if(DEBUG_A)	    echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_POST <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	    print_r($_POST);					
-if(DEBUG_A)	    echo "</pre>";
-*/
 
-
-                #************ FORM PROCESSING ***********#
+                debugArray('_POST', $_POST);
 
                 // Step 1 FORM: Check whether the form has been sent
-
                 if( isset($_POST['editForm']) === true ) {
-if(DEBUG)		echo "<p class='debug'>🧻 <b>Line " . __LINE__ . "</b>: The form 'editForm' has been sent. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+
+                    debugProcessStart('The form "editForm" has been sent.');
                     
                     // Step 2 FORM: Read, sanitize and output form data
-                    
-if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Reading and sanitizing form data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugProcessStart('Reading and sanitizing form data...');
                     
                     $editedCategory     = sanitizeString($_POST['b8']);
                     $editedTitle        = sanitizeString($_POST['b9']);
@@ -740,23 +733,22 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Read
                     $editedBlogID       = sanitizeString($_POST['b12']);
                     $editedImagePath    = sanitizeString($_POST['b13']);
 
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$editedCategory: $editedCategory <i>(" . basename(__FILE__) . ")</i></p>\n";
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$editedTitle: $editedTitle <i>(" . basename(__FILE__) . ")</i></p>\n";
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$editedAlignment: $editedAlignment <i>(" . basename(__FILE__) . ")</i></p>\n";
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$editedContent: $editedContent <i>(" . basename(__FILE__) . ")</i></p>\n";
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$editedBlogID: $editedBlogID <i>(" . basename(__FILE__) . ")</i></p>\n";
-if(DEBUG_V)	        echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$editedImagePath: $editedImagePath <i>(" . basename(__FILE__) . ")</i></p>\n";
+                    debugVariable('editedCategory',     $editedCategory);
+                    debugVariable('editedTitle',        $editedTitle);
+                    debugVariable('editedAlignment',    $editedAlignment);
+                    debugVariable('editedContent',      $editedContent);
+                    debugVariable('editedBlogID',       $editedBlogID);
+                    debugVariable('editedImagePath',    $editedImagePath);
 
                     // Step 3 FORM: Field validation
+                    debugProcessStart('Validating fields...');
 
-if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Validating fields... <i>(" . basename(__FILE__) . ")</i></p>\n";
-
-                    $errorCategory              = validateInputString( $editedCategory, minLength:1, maxLength:20 );
-                    $errorTitle                 = validateInputString( $editedTitle, minLength:1 );
+                    $errorCategory              = validateInputString( $editedCategory, maxLength:20 );
+                    $errorTitle                 = validateInputString( $editedTitle );
                     // $alignment is not mandatory but should return a value either way. It would indicate an error should it return empty.
                     $errorAlignment             = validateInputString( $editedAlignment, minLength:4, maxLength:5 );
-                    $errorContent               = validateInputString( $editedContent, minLength:1, maxLength:10000 );
-                    $errorEditedBlogID          = validateInputString( $editedBlogID, minLength:1, maxLength:11 );
+                    $errorContent               = validateInputString( $editedContent, maxLength:10000 );
+                    $errorEditedBlogID          = validateInputString( $editedBlogID, maxLength:11 );
                     $errorEditedImagePath       = validateInputString( $editedImagePath, mandatory:false );
 
                     #**************** FINAL FORM VALIDATION 1 *****************#
@@ -769,58 +761,51 @@ if(DEBUG)	        echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Vali
                         $errorEditedImagePath       !== NULL ) 
                     {
                         // error
-if(DEBUG)	            echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 1: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                        debugError('FINAL FORM VALIDATION PART I: The form contains errors!');	
 
                         $showEdit = true;
 
                     } else {
                         // success
-if(DEBUG)	            echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 1: The form is formally free of errors. <i>(" . basename(__FILE__) . ")</i></p>\n";
+                        debugSuccess('FINAL FORM VALIDATION PART I: The form is formally free of errors.');	
 
                         #****************************************#
 				        #************ IMAGE UPLOAD **************#
 				        #****************************************#
 
-                        #************ PREVIEW IMAGE ARRAY **************************#
-/*
-if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$_FILES <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	print_r($_FILES);					
-if(DEBUG_A)	echo "</pre>";
-*/
+                        debugProcessStart('Checking image upload...');
 
                         #************ CHECK IF IMAGE UPLOAD IS ACTIVE **************#
 
                         if( $_FILES['image']['tmp_name'] === '') {
                             // image upload is not active
-if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Image upload is NOT active! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                            debugOccurrence('Image upload is inactive');
 
                         } else {
                             // image upload is active
-if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Image upload is active. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                            debugOccurrence('Image upload is active');
 
                             #************ VALIDATE IMAGE UPLOAD ********************#
 
                             $validatedImageArray = validateImageUpload( $_FILES['image']['tmp_name'] );
-/*
-if(DEBUG_A)	                echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$validatedImageArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	                print_r($validatedImageArray);					
-if(DEBUG_A)	                echo "</pre>";
-*/
+
+                            debugArray('validatedImageArray', $validatedImageArray);
 
                             if( $validatedImageArray['imageError'] !== NULL ) {
                                 // error
-if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: ERROR with image upload: $validatedImageArray[imageError] <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                                debugError("Image upload error: " . $validatedImageArray['imageError']);	
+
                                 $errorImage = $validatedImageArray['imageError'];
 
                             } else {
                                 // success
-if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Image was successfully uploaded to $validatedImageArray[imagePath]. <i>(" . basename(__FILE__) . ")</i></p>\n";		
+                                debugSuccess("The image has successfully saved here:" . $validatedImageArray['imagePath'] . ".");	
 
                                 #*********** DELETE OLD IMAGE FROM SERVER ************#
 
                                 if( @unlink( $editedImagePath) === false ) {
                                     // error
-if(DEBUG)	                        echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: Error when attempting to delete the old image at <i>'$editedImagePath'</i>! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                                    debugError("Error when attempting to delete the old image at '$editedImagePath'");	
 
                                     // error message for admin
                                     $logError   = 'Error trying to DELETE an OLD IMAGE from server.';
@@ -847,7 +832,7 @@ if(DEBUG)	                        echo "<p class='debug err'><b>Line " . __LINE_
 
                                 } else {
                                     // success
-if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: Old image at <i>'$editedImagePath'</i> successfully deleted. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                                    debugSuccess("Old image at '$editedImagePath' has been successfully deleted.");
 
                                 } // DELETE OLD IMAGE FROM SERVER END
 
@@ -861,20 +846,18 @@ if(DEBUG)	                        echo "<p class='debug ok'><b>Line " . __LINE__
 
                         if( $errorImage !== NULL ) {
                             // error
-if(DEBUG)	                echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 2: The form contains errors! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                            debugError("FINAL FORM VALIDATION PART II: Error for image upload: $validatedImageArray[imageError]");
 
                         } else {
                             // success
-if(DEBUG)	                echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: FINAL FORM VALIDATION 2: The form is completely free of errors. <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                            debugSuccess('FINAL FORM VALIDATION PART II: The form is completely free of errors.');
 
 
                             // Step 4 FORM: data processing
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: The form data is being further processed... <i>(" . basename(__FILE__) . ")</i></p>\n";
 
                             #**************** UPLOAD DATA TO DATABASE *****************#
 
-if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Updating blog post... <i>(" . basename(__FILE__) . ")</i></p>\n";
-
+                            debugProcessStart('Updating blog post...');
 
                             #****************************************#
 				            #************ DB OPERATIONS *************#
@@ -882,7 +865,7 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
 
                             // Step 1 DB: Connect to database
 
-                            $PDO = dbConnect('blogprojekt');
+                            $PDO = dbConnect();
 
                             // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
@@ -913,21 +896,21 @@ if(DEBUG)	                echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</
                                 // showQuery($PDOStatement);
                                 
                             } catch(PDOException $error) {
-if(DEBUG) 		                echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                                debugErrorDB($error);									
                             }
 
                             // Step 4 DB: evaluate the DB-operation and close the DB connection
 
                             $rowCount = $PDOStatement -> rowCount();
 
-if(DEBUG_V)	                echo "<p class='debug value'><b>Line " . __LINE__ . "</b>: \$rowCount: $rowCount <i>(" . basename(__FILE__) . ")</i></p>\n";
+                            debugVariable('rowCount', $rowCount);
 
                             if( $rowCount !== 1 ) {
                                 // error
-if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . "</b>: The blog post could not be updated to the database! <i>(" . basename(__FILE__) . ")</i></p>\n";	
+                                debugErrorDB('The blog post could not be updated.');
 
                                 // error message for user
-                                $dbError    = 'The blog post could not be updated. Please contact your admin.';
+                                $dbError    = 'The blog post could not be updated. Please try again later.';
 
                                 // error message for admin
                                 $logError   = 'Error trying to UPDATE a BLOG POST to database.';
@@ -954,7 +937,7 @@ if(DEBUG)	                    echo "<p class='debug err'><b>Line " . __LINE__ . 
 
                             } else {
                                 // success
-if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "</b>: $rowCount blog article has been successfully updated. <i>(" . basename(__FILE__) . ")</i></p>\n";
+                                debugSuccess("$rowCount blog post has been successfully updated.");
 
                                 $dbSuccess = 'Your blog post has been updated.'; 
 
@@ -981,14 +964,10 @@ if(DEBUG)	                    echo "<p class='debug ok'><b>Line " . __LINE__ . "
 				#************* DB OPERATIONS ************#
 				#****************************************#
 
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Begin database operation to fetch blog data... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                debugProcessStart("Fetching blog posts from database...");	
 
                 // Step 1 DB: Connect to database
-
-                $PDO = dbConnect('blogprojekt');
-
-                #************ FETCH DATA FROM DB *************#
-if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching blog data from database... <i>(" . basename(__FILE__) . ")</i></p>\n";
+                $PDO = dbConnect();
 
                 // Step 2 DB: Create the SQL-Statement and a placeholder-array
 
@@ -1011,7 +990,7 @@ if(DEBUG)	    echo "<p class='debug'>📑 <b>Line " . __LINE__ . "</b>: Fetching
                     // showQuery($PDOStatement);
                     
                 } catch(PDOException $error) {
-if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERROR: " . $error->GetMessage() . "<i>(" . basename(__FILE__) . ")</i></p>\n";										
+                    debugErrorDB($error);								
                 }
 
                 // Step 4 DB: evaluate the DB-operation and close the DB connection
@@ -1021,11 +1000,8 @@ if(DEBUG) 		    echo "<p class='debug db err'><b>Line " . __LINE__ . "</b>: ERRO
                 // close DB connection
 
                 dbClose($PDO, $PDOStatement);
-/*
-if(DEBUG_A)	echo "<pre class='debug value'><b>Line " . __LINE__ . "</b>: \$blogArray <i>(" . basename(__FILE__) . ")</i>:<br>\n";					
-if(DEBUG_A)	print_r($blogArray);				
-if(DEBUG_A)	echo "</pre>";
-*/
+
+                debugArray('blogArray', $blogArray);
 
 
 #*************************************************************************#
