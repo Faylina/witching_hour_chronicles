@@ -165,8 +165,12 @@
 
                         debugProcessStart('Deleting data from database...');
 
-                        // fetch the blogID of the post to be deleted
+                        // fetch the blogID  and image path (if the post has an image) of the post to be deleted
                         $chosenBlog = $_SESSION['postToBeDeleted'];
+
+                        if($_SESSION['blogImageToBeDeleted'] === true) {
+                            $blogImageToBeDeleted = $_SESSION['blogImageToBeDeleted'];
+                        }
 
                         #****************************************#
                         #************ DB OPERATIONS *************#
@@ -200,7 +204,46 @@
                         $rowCount = $PDOStatement -> rowCount();
 
                         debugVariable('rowCount', $rowCount);
+
+
+                        #*********** DELETE OLD IMAGE FROM SERVER ************#
+                        if($blogImageToBeDeleted === true) {
+                            
+                            if( @unlink( $blogImageToBeDeleted) === false ) {
+                                // error
+                                debugError("Error when attempting to delete the old image at '$blogImageToBeDeleted'");	
+
+                                // error message for admin
+                                $logError   = 'Error trying to DELETE an OLD IMAGE from server.';
+
+                                /******** WRITE TO ERROR LOG ******/
+
+                                // create file
+
+                                if( file_exists('./logfiles') === false ) {
+                                    mkdir('./logfiles');
+                                }
+
+                                // create error message
+
+                                $logEntry    = "\t<p>";
+                                $logEntry   .= date('Y-m-d | h:i:s |');
+                                $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
+                                $logEntry   .= '<i>' . $logError . '</i>';
+                                $logEntry   .= "</p>\n";
+
+                                // write error message to log
+
+                                file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
+
+                            } else {
+                                // success
+                                debugSuccess("Old image at '$blogImageToBeDeleted' has been successfully deleted.");
+
+                            } // DELETE OLD IMAGE FROM SERVER END
+                        }
                         
+
                         if( $rowCount !== 1 ) {
                             // error
                             debugErrorDB('Deletion failed!');	
@@ -743,7 +786,7 @@
                     // Step 3 FORM: Field validation
                     debugProcessStart('Validating fields...');
 
-                    $errorCategory              = validateInputString( $editedCategory, maxLength:20 );
+                    $errorCategory              = validateInputString( $editedCategory, maxLength:11 );
                     $errorTitle                 = validateInputString( $editedTitle );
                     // $alignment is not mandatory but should return a value either way. It would indicate an error should it return empty.
                     $errorAlignment             = validateInputString( $editedAlignment, minLength:4, maxLength:5 );
@@ -950,7 +993,7 @@
 
                     } // FINAL FORM VALIDATION 1 END
 
-                } // PROCESS ARTICLE FORM END
+                } // PROCESS EDIT FORM END
 
 
 #*************************************************************************#
@@ -1111,6 +1154,10 @@
                                     // retrieve the user ID of the blog post to be deleted
                                     $blogUserID         = $value['userID'];
                                     $blogTitleToDelete  = $value['blogHeadline'];
+
+                                    if($value['blogImagePath'] !== NULL) {
+                                        $blogImageToBeDeleted = $value['blogImagePath'];
+                                    } 
                                 }
                             }
 
@@ -1125,8 +1172,12 @@
                                 // the user is the author of the chosen blog post -> deletion is allowed
                                 debugSuccess('The user is confirmed to be the author of this post.');
 
-                                // store blog ID of the post to be deleted in session
+                                // store blog ID and image path of the post to be deleted in session
                                 $_SESSION['postToBeDeleted'] = $chosenBlog;
+
+                                if($blogImageToBeDeleted === true) {
+                                    $_SESSION['blogImageToBeDeleted'] = $blogImageToBeDeleted;
+                                }
 
                                 $alert = "Do you really want to delete the blog post $blogTitleToDelete?";
 
@@ -1306,7 +1357,6 @@
                                     <!-- ------------- Category ------------- -->
                                     <label for="b8">Choose a category</label>
                                     <select name="b8" id="b8" class="form-text">
-                                        <?= $value['catID'] ?>
                                         <?php foreach( $categoryArray AS $dbCategory ): ?>
                                             <option value="<?= $dbCategory['catID'] ?>" <?php if($dbCategory['catID'] == $value['catID']) echo 'selected'?>>
                                                 <?= $dbCategory['catLabel'] ?>
@@ -1389,7 +1439,6 @@
                             <!-- ------------- Category ------------- -->
                             <label for="b8">Choose a category</label>
                             <select name="b8" id="b8" class="form-text">
-                                <?= $editedCategory ?>
                                 <?php foreach( $categoryArray AS $dbCategory ): ?>
                                     <option value="<?= $dbCategory['catID'] ?>" <?php if($dbCategory['catID'] == $editedCategory) echo 'selected'?>>
                                         <?= $dbCategory['catLabel'] ?>
