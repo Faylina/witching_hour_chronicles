@@ -43,6 +43,7 @@
                 $errorImage             = NULL;
                 $errorContent           = NULL;
                 $errorCategory          = NULL;
+                $errorNewCategory       = NULL;
                 $dbError                = NULL;
                 $dbSuccess              = NULL;
                 $dbDeleteError          = NULL;
@@ -168,8 +169,10 @@
                         // fetch the blogID  and image path (if the post has an image) of the post to be deleted
                         $chosenBlog = $_SESSION['postToBeDeleted'];
 
-                        if($_SESSION['blogImageToBeDeleted'] === true) {
+                        if($_SESSION['blogImageToBeDeleted']) {
                             $blogImageToBeDeleted = $_SESSION['blogImageToBeDeleted'];
+
+                            debugVariable('blogImageToBeDeleted', $blogImageToBeDeleted);
                         }
 
                         #****************************************#
@@ -204,44 +207,6 @@
                         $rowCount = $PDOStatement -> rowCount();
 
                         debugVariable('rowCount', $rowCount);
-
-
-                        #*********** DELETE OLD IMAGE FROM SERVER ************#
-                        if($blogImageToBeDeleted === true) {
-                            
-                            if( @unlink( $blogImageToBeDeleted) === false ) {
-                                // error
-                                debugError("Error when attempting to delete the old image at '$blogImageToBeDeleted'");	
-
-                                // error message for admin
-                                $logError   = 'Error trying to DELETE an OLD IMAGE from server.';
-
-                                /******** WRITE TO ERROR LOG ******/
-
-                                // create file
-
-                                if( file_exists('./logfiles') === false ) {
-                                    mkdir('./logfiles');
-                                }
-
-                                // create error message
-
-                                $logEntry    = "\t<p>";
-                                $logEntry   .= date('Y-m-d | h:i:s |');
-                                $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
-                                $logEntry   .= '<i>' . $logError . '</i>';
-                                $logEntry   .= "</p>\n";
-
-                                // write error message to log
-
-                                file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
-
-                            } else {
-                                // success
-                                debugSuccess("Old image at '$blogImageToBeDeleted' has been successfully deleted.");
-
-                            } // DELETE OLD IMAGE FROM SERVER END
-                        }
                         
 
                         if( $rowCount !== 1 ) {
@@ -281,7 +246,46 @@
                         
                             $dbDeleteSuccess = 'The blog post has been successfully deleted.';
 
-                        }
+                            #*********** DELETE OLD IMAGE FROM SERVER ************#
+
+                            if($blogImageToBeDeleted) {
+                                
+                                if( @unlink( $blogImageToBeDeleted) === false ) {
+                                    // error
+                                    debugError("Error when attempting to delete the old image at '$blogImageToBeDeleted'");	
+
+                                    // error message for admin
+                                    $logError   = 'Error trying to DELETE an OLD IMAGE from server.';
+
+                                    /******** WRITE TO ERROR LOG ******/
+
+                                    // create file
+
+                                    if( file_exists('./logfiles') === false ) {
+                                        mkdir('./logfiles');
+                                    }
+
+                                    // create error message
+
+                                    $logEntry    = "\t<p>";
+                                    $logEntry   .= date('Y-m-d | h:i:s |');
+                                    $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
+                                    $logEntry   .= '<i>' . $logError . '</i>';
+                                    $logEntry   .= "</p>\n";
+
+                                    // write error message to log
+
+                                    file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
+
+                                } else {
+                                    // success
+                                    debugSuccess("Old image at '$blogImageToBeDeleted' has been successfully deleted.");
+
+                                } // DELETE OLD IMAGE FROM SERVER END
+
+                            } // CHECK IF IMAGE EXISTS END
+
+                        } // EVALUATE DB OPERATION END
                         
                         // close DB connection
                         dbClose($PDO, $PDOStatement);
@@ -331,15 +335,15 @@
                     // Step 3 FORM: Field validation
                     debugProcessStart('Validating fields...');
 
-                    $errorCategory = validateInputString( $newCategory, maxLength:50 );
+                    $errorNewCategory = validateInputString( $newCategory, maxLength:50 );
 
                     #********** FINAL FORM VALIDATION **********#
 
-                    if( $errorCategory !== NULL ) {
+                    if( $errorNewCategory !== NULL ) {
                         // error
                         debugError('The form contains errors!');
 
-                        $errorCategory = 'Please enter a category of up to 256 characters.';
+                        $errorNewCategory = 'Please enter a category.';
 
                     } else {
                         // success
@@ -391,7 +395,7 @@
                             // error
                             debugError("This category already exists.");
 
-                            $errorCategory = 'This category already exists.';
+                            $errorNewCategory = 'This category already exists.';
 
                         } else {
                             // success
@@ -567,9 +571,15 @@
                     $errorAlignment = validateInputString( $alignment, minLength:4, maxLength:5 );
                     $errorContent   = validateInputString( $content, minLength:5, maxLength:20000 );
 
+                    debugArray('categoryArray', $categoryArray);
+
                     #********** WHITELISTING 1: CHECK IF CATEGORY NAME EXISTS IN DATABASE **********#
 
-					if( array_key_exists($category, $categoryArray) === false) {
+                    $key = $category - 1;
+
+                    debugVariable('key', $key);
+
+					if( $category != $categoryArray[$key]['catID']) {
 						// error
 						debugError('This category does not exist.');
 					
@@ -626,9 +636,9 @@
 
                                 $errorImage = $validatedImageArray['imageError'];
 
-                            } elseif( $validateImageUploadResultArray['imagePath'] !== NULL ) {
+                            } elseif( $validatedImageArray['imagePath'] !== NULL ) {
                                 // success
-                                debugSuccess("The image has successfully saved here:" . $validateImageUploadResultArray['imagePath'] . ".");
+                                debugSuccess("The image has successfully saved here:" . $validatedImageArray['imagePath'] . ".");
 
                                 $imagePath = $validatedImageArray['imagePath'];
 
@@ -642,7 +652,7 @@
 
                         if( $errorImage !== NULL ) {
                             // error
-                            debugError("FINAL FORM VALIDATION PART II: Error for image upload: $validateImageUploadResultArray[imageError]");
+                            debugError("FINAL FORM VALIDATION PART II: Error for image upload: $validatedImageArray[imageError]");
 
                         } else {
                             // success
@@ -845,39 +855,42 @@
                                 debugSuccess("The image has successfully saved here:" . $validatedImageArray['imagePath'] . ".");	
 
                                 #*********** DELETE OLD IMAGE FROM SERVER ************#
+                                if($editedImagePath !== NULL) {
 
-                                if( @unlink( $editedImagePath) === false ) {
-                                    // error
-                                    debugError("Error when attempting to delete the old image at '$editedImagePath'");	
+                                    if( @unlink( $editedImagePath) === false ) {
+                                        // error
+                                        debugError("Error when attempting to delete the old image at '$editedImagePath'");	
 
-                                    // error message for admin
-                                    $logError   = 'Error trying to DELETE an OLD IMAGE from server.';
+                                        // error message for admin
+                                        $logError   = 'Error trying to DELETE an OLD IMAGE from server.';
 
-                                    /******** WRITE TO ERROR LOG ******/
+                                        /******** WRITE TO ERROR LOG ******/
 
-                                    // create file
+                                        // create file
 
-                                    if( file_exists('./logfiles') === false ) {
-                                        mkdir('./logfiles');
-                                    }
+                                        if( file_exists('./logfiles') === false ) {
+                                            mkdir('./logfiles');
+                                        }
 
-                                    // create error message
+                                        // create error message
 
-                                    $logEntry    = "\t<p>";
-                                    $logEntry   .= date('Y-m-d | h:i:s |');
-                                    $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
-                                    $logEntry   .= '<i>' . $logError . '</i>';
-                                    $logEntry   .= "</p>\n";
+                                        $logEntry    = "\t<p>";
+                                        $logEntry   .= date('Y-m-d | h:i:s |');
+                                        $logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
+                                        $logEntry   .= '<i>' . $logError . '</i>';
+                                        $logEntry   .= "</p>\n";
 
-                                    // write error message to log
+                                        // write error message to log
 
-                                    file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
+                                        file_put_contents('./logfiles/error_log.html', $logEntry, FILE_APPEND);
 
-                                } else {
-                                    // success
-                                    debugSuccess("Old image at '$editedImagePath' has been successfully deleted.");
+                                    } else {
+                                        // success
+                                        debugSuccess("Old image at '$editedImagePath' has been successfully deleted.");
 
-                                } // DELETE OLD IMAGE FROM SERVER END
+                                    } // DELETE OLD IMAGE FROM SERVER END
+
+                                } // CHECK IF IMAGE EXISTS END
 
                                 $editedImagePath = $validatedImageArray['imagePath'];
 
@@ -1157,6 +1170,8 @@
 
                                     if($value['blogImagePath'] !== NULL) {
                                         $blogImageToBeDeleted = $value['blogImagePath'];
+
+                                        debugVariable('blogImageToBeDeleted', $blogImageToBeDeleted);
                                     } 
                                 }
                             }
@@ -1175,11 +1190,11 @@
                                 // store blog ID and image path of the post to be deleted in session
                                 $_SESSION['postToBeDeleted'] = $chosenBlog;
 
-                                if($blogImageToBeDeleted === true) {
+                                if($blogImageToBeDeleted) {
                                     $_SESSION['blogImageToBeDeleted'] = $blogImageToBeDeleted;
                                 }
 
-                                $alert = "Do you really want to delete the blog post $blogTitleToDelete?";
+                                $alert = "Do you really want to delete the blog post '$blogTitleToDelete'?";
 
                             } // USER AUTHORIZATION END
 
@@ -1245,32 +1260,34 @@
                     $alert              !== NULL OR 
                     $dbDeleteError      !== NULL OR  
                     $dbDeleteSuccess    !== NULL ): ?>
-            <popupBox>
-                <!-- Message -->
-                <?php if( $dbError ):?>
-                    <h3 class="popup-error"><?= $dbError ?></h3>
-                <?php elseif( $dbSuccess ): ?>
-                    <h3 class="popup-success"><?= $dbSuccess ?></h3>
-                <?php elseif( $dbDeleteError ): ?>
-                    <h3 class="popup-error"><?= $dbDeleteError ?></h3>
-                <?php elseif( $dbDeleteSuccess ): ?>
-                    <h3 class="popup-success"><?= $dbDeleteSuccess ?></h3>
-                <?php elseif( $info ): ?>
-                    <h3 class="popup-error"><?= $info ?></h3>
-                <?php elseif( $alert ): ?>
-                    <h3 class="popup-success"><?= $alert ?></h3>
-                <?php endif ?>
+            <div class="overlay">
+                <popupBox>
+                    <!-- Message -->
+                    <?php if( $dbError ):?>
+                        <h3 class="popup-error"><?= $dbError ?></h3>
+                    <?php elseif( $dbSuccess ): ?>
+                        <h3 class="popup-success"><?= $dbSuccess ?></h3>
+                    <?php elseif( $dbDeleteError ): ?>
+                        <h3 class="popup-error"><?= $dbDeleteError ?></h3>
+                    <?php elseif( $dbDeleteSuccess ): ?>
+                        <h3 class="popup-success"><?= $dbDeleteSuccess ?></h3>
+                    <?php elseif( $info ): ?>
+                        <h3 class="popup-error"><?= $info ?></h3>
+                    <?php elseif( $alert ): ?>
+                        <h3 class="popup-success"><?= $alert ?></h3>
+                    <?php endif ?>
 
-                <!-- Button -->
-                <?php if( $dbError OR $dbSuccess OR $info ): ?>
-                    <a class="button" onclick="document.getElementsByTagName('popupBox')[0].style.display = 'none'">Okay</a>
-                <?php elseif( $alert ): ?>
-                    <a class="button" href="?action=cancelDelete">Cancel</a>
-                    <a class="button" href="?action=delete">Delete Post</a>
-                <?php elseif( $dbDeleteError OR $dbDeleteSuccess ): ?>
-                    <a class="button" href="?action=okay">Okay</a>
-                <?php endif ?>
-            </popupBox> 
+                    <!-- Button -->
+                    <?php if( $dbError OR $dbSuccess OR $info ): ?>
+                        <a class="button" onclick="document.getElementsByTagName('popupBox')[0].style.display = 'none'">Okay</a>
+                    <?php elseif( $alert ): ?>
+                        <a class="button" href="?action=cancelDelete">Cancel</a>
+                        <a class="button" href="?action=delete">Delete Post</a>
+                    <?php elseif( $dbDeleteError OR $dbDeleteSuccess ): ?>
+                        <a class="button" href="?action=okay">Okay</a>
+                    <?php endif ?>
+                </popupBox> 
+            </div>
         <?php endif ?>
 
         <!-- ------------- USER MESSAGE END ------------------------------------ -->
@@ -1283,7 +1300,7 @@
             
             <?php if( $showView === true ): ?>
 
-                <!-- ------------- BLOG POST BEGIN ---------------------------------- -->
+                <!-- ------------- VIEW BLOG POST BEGIN ---------------------------------- -->
 
                 <div class="blog">
 
@@ -1324,7 +1341,7 @@
 
                     <?php endforeach ?>
                 </div>
-                <!-- ------------- BLOG POST END ------------------------------------ -->
+                <!-- ------------- VIEW BLOG POST END ------------------------------------ -->
                         
 
             <?php elseif( $showEdit === true ): ?>
@@ -1391,7 +1408,7 @@
                                         <br>
                                         <!-- ------------- Image Upload ---------- -->
                                         <div class="error"><?= $errorImage ?></div>
-                                        <input type="file" name="image">
+                                        <input type="file" name="image" class="image-button">
                                         <br>
                                         <br>
                                         <!-- ------------- Image Alignment ---------- -->
@@ -1421,7 +1438,7 @@
                         
                         <!-- Edit form in the case of an input error --> 
 
-                        <!-- ------------- EDIT FORM BEGIN ------------------------- -->
+                        <!-- ------------- ERROR EDIT FORM BEGIN ------------------------- -->
 
                         <form action="" class="edit-form" method="POST" enctype="multipart/form-data">
 
@@ -1473,7 +1490,7 @@
                                 <br>
                                 <!-- ------------- Image Upload ---------- -->
                                 <div class="error"><?= $errorImage ?></div>
-                                <input type="file" name="image">
+                                <input type="file" name="image" class="image-button">
                                 <br>
                                 <br>
                                 <!-- ------------- Image Alignment ---------- -->
@@ -1494,14 +1511,14 @@
                             <br>
                             <input type="submit" class="form-button" value="Publish">
                             </form>
-                            <!-- ------------- EDIT FORM END ---------------------------- -->
+                            <!-- ------------- ERROR EDIT FORM END ---------------------------- -->
 
                     <?php endif ?>
                 </div>
 
             <?php else: ?>
 
-                <!-- ------------- BLOG POST FORM BEGIN ------------------------- -->
+                <!-- ------------- NEW BLOG POST FORM BEGIN ------------------------- -->
 
                 <form class="article-form" action="" method="POST" enctype="multipart/form-data">
                     <div class="form-heading">Write a new blog post</div>
@@ -1541,7 +1558,7 @@
                         <br>
                         <!-- ------------- Image Upload ---------- -->
                         <div class="error"><?= $errorImage ?></div>
-                        <input type="file" name="image">
+                        <input type="file" name="image" class="image-button">
                         <br>
                         <br>
                         <!-- ------------- Image Alignment ---------- -->
@@ -1558,7 +1575,7 @@
                     <!-- ------------- Content ------------------ -->
                     <label for="b4">Write your blog post</label>
                     <div class="error"><?= $errorContent ?></div>
-                    <textarea name="b4" id="b4" class="textarea" cols="30" rows="25"><?= $content ?></textarea>
+                    <textarea name="b4" id="b4" class="textarea" cols="30" rows="25" placeholder="..."><?= $content ?></textarea>
                     <br>
                     <input type="submit" class="form-button" value="Publish">
                 </form>
@@ -1577,7 +1594,7 @@
                     <input type="hidden" name="categoryForm">
                     <br>
                     <label for="b5">Name the new category</label>
-                    <div class="error"><?= $errorCategory ?></div>
+                    <div class="error"><?= $errorNewCategory ?></div>
                     <input type="text" class="form-text" name="b5" id="b5" placeholder="Category name" value="<?= $newCategory ?>">
                     <br>
                     <input type="submit" class="form-button" value="Create category">
@@ -1638,7 +1655,11 @@
                 <ul>
                     <li>Copyright</li> 
                     <li>&copy;</li> 
-                    <li>Faylina 2024</li>
+                    <?php if(date('Y') > 2024): ?>
+                        <li>Faylina 2024 - <?= date('Y') ?></li>
+                    <?php else: ?>
+                        <li>Faylina 2024</li>
+                    <?php endif ?>
                 </ul>
             </div>
         </footer>
