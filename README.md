@@ -2,20 +2,20 @@
 
 This is the functional version of my first project written in PHP featuring a witchy blog.
 
-# ----- Vision for this website -----#
+# ----- Vision for this website -----
 
 Witching Hour Chronicles is a simple blog-system for witchy blog posts. It tries to capture
 the mysterious essence of the night and the occult with its design and uplifting posts.
 At the same time, it is meant to be intuitive and practical, while offering comforting
 security.
 
-# ----- Goals -----#
+# ----- Goals -----
 
 The goals of this project are to practice working with PHP, an Apache server and a mySQL database 
 (MariaDB) and build a blog, a common element of the internet. 
 Moreover, security aspects are a primary focus in this project.
 
-# ----- Structure -----#
+# ----- Structure -----
 
 FILE STRUCTURE
 - The root directory contains the main scripts for the homepage and the dashboard, directories for 
