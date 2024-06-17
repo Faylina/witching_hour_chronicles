@@ -416,3 +416,16 @@ popupBox a.button:hover {
 	cursor: pointer;
 }
 
+
+/********** LINK TO THE CODING SORCERESS ***********/
+
+.coding-sorceress {
+    width: 100%;
+    background-color: #625772;
+    color: #FEFAEC;
+    padding: 10px 5px 10px 40px;
+}
+
+.coding-sorceress a:hover {
+    color: #F9A1BC;
+}
