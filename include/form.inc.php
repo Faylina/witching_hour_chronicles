@@ -399,5 +399,71 @@ if(DEBUG_F)			echo "<p class='debug ok validateImageUpload'><b>Line " . __LINE__
 				
 				}	
 
+	
+#**********************************************************************************#
+
+				#****************************************#
+				#********** SECURE PAGE ACCESS **********#
+				#****************************************#
+
+				/**
+				 * 
+				 * Secures the access to a page for only logged-in users.
+				 * 
+				 * @param	String 	$sessionName 						the name of the session
+				 * @param	String	$sessionToken						the token to identify the user by
+				 * @param	String	$locationPath 	= './index.php'		the path to redirect the user to
+				 * 														if they are not logged in
+				 * 
+				 * @return	NULL 	
+				 *  
+				 */
+
+				 function secureAccess($sessionName, $sessionToken, $locationPath = './index.php') {
+
+					#************ PREPARE SESSION ***********#
+
+					session_name($sessionName);
+
+					#********** CONTINUE SESSION	**********#
+					if( session_start() === false ) {
+						// error
+						debugError('Error when attempting to start the session.');			
+										
+					} else {
+						// success
+						debugSuccess('The session has been successfully started...');					
+
+						#****************************************#
+						#******** CHECK FOR VALID LOGIN *********#
+						#****************************************#
+
+						if( isset($_SESSION[$sessionToken]) === false OR $_SESSION['IPAddress'] !== $_SERVER['REMOTE_ADDR'] ) {
+							// error (user is not logged in)
+							debugError('Login could not be validated!');	
+
+							#************ DENY PAGE ACCESS ***********#
+
+							session_destroy();
+
+							#************ REDIRECT TO HOMEPAGE *********#
+
+							header('LOCATION: ' . $locationPath);
+
+							// Fallback in case of an error: end processing of the script
+							exit();
+
+						} else {
+							// success (user is logged in)
+							debugSuccess('Valid login.');
+
+							#************ GENERATE NEW SESSION ID ***********#
+							session_regenerate_id(true);
+
+						} // CHECK FOR VALID LOGIN END
+
+					} // SECURE PAGE ACCESS END
+				}
+
 
 #**********************************************************************************#

@@ -64,58 +64,47 @@
 				#********** SECURE PAGE ACCESS **********#
 				#****************************************#
 
-                #************ PREPARE SESSION ***********#
+                // secure access only for logged-in users of Coding Sorceress
+                secureAccess('wwwcodingsorceresscom', 'user', '../../index.php');
 
-                session_name('wwwwitchinghourchroniclescom');
+                // secure access only for logged-in users of Witching Hour Chronicles
 
+                #****************************************#
+                #******** CHECK FOR VALID LOGIN *********#
+                #****************************************#
 
-                #************ START / CONTINUE SESSION ***********#
+                if( isset($_SESSION['ID']) === false OR $_SESSION['IPAddress'] !== $_SERVER['REMOTE_ADDR'] ) {
+                    // error
+                    debugAuth('User is not logged in.');
 
-                if( session_start() === false ) {
-					// error
-					debugError('Error starting the session.');			
-									
-				} else {
-					// success
-					debugSuccess('The session has been started successfully.');	
+                    #************ DENY PAGE ACCESS ***********#
 
-                    #****************************************#
-                    #******** CHECK FOR VALID LOGIN *********#
-                    #****************************************#
+                    // 1. Delete session for Witching Hour Chronicles
+                    unset($_SESSION['ID']);
 
-                    if( isset($_SESSION['ID']) === false OR $_SESSION['IPAddress'] !== $_SERVER['REMOTE_ADDR'] ) {
-                        // error
-                        debugAuth('User is not logged in.');
+                    // 2. Redirect to homepage
+                    header('LOCATION: index.php');
 
-                        #************ DENY PAGE ACCESS ***********#
+                    // 3. Fallback in case of an error: end processing of the script
+                    exit();
 
-                        // 1. Delete session file
-                        session_destroy();
+                #************ VALID LOGIN ***********#
+                } else {
+                    // success
+                    debugAuth('Valid login.');	
 
-                        // 2. Redirect to homepage
-                        header('LOCATION: index.php');
+                    #************ GENERATE NEW SESSION ID ***********#
+                    session_regenerate_id(true);
 
-                        // 3. Fallback in case of an error: end processing of the script
-                        exit();
+                    $userID         = $_SESSION['ID'];
+                    $userFirstName  = $_SESSION['firstName'];
+                    $userLastName   = $_SESSION['lastName'];
 
-                    #************ VALID LOGIN ***********#
-                    } else {
-                        // success
-                        debugAuth('Valid login.');	
-
-                        #************ GENERATE NEW SESSION ID ***********#
-                        session_regenerate_id(true);
-
-                        $userID         = $_SESSION['ID'];
-                        $userFirstName  = $_SESSION['firstName'];
-                        $userLastName   = $_SESSION['lastName'];
-
-                        debugVariable('userID', $userID );
-                        debugVariable('userFirstName', $userFirstName );
-                        debugVariable('userLastName', $userLastName );
-                        
-                    }     
-                }    
+                    debugVariable('userID',         $userID );
+                    debugVariable('userFirstName',  $userFirstName );
+                    debugVariable('userLastName',   $userLastName );
+                    
+                }     
             
 
 #*************************************************************************#
@@ -150,8 +139,8 @@
                     
                         // Step 4 URL: processing data
                     
-                        // 1. Delete session file
-                        session_destroy();
+                        // 1. Delete session for Witching Hour Chronicles
+                        unset($_SESSION['ID']);
                     
                         // 2. Reload homepage
                         header('LOCATION: index.php');

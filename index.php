@@ -30,21 +30,10 @@
 				#********** SECURE PAGE ACCESS **********#
 				#****************************************#
 
-                #************ PREPARE SESSION ***********#
+                // secure access only for logged-in users of Coding Sorceress
+                secureAccess('wwwcodingsorceresscom', 'user', '../../index.php');
 
-                session_name('wwwwitchinghourchroniclescom');
-
-
-                #************ START / CONTINUE SESSION ***********#
-
-                #********** START/CONTINUE SESSION **********#
-				if( session_start() === false ) {
-					// error
-					debugError('Error starting the session.');				
-									
-				} else {
-					// success
-					debugSuccess('The session has been started successfully.');	
+                // secure access only for logged-in users of Witching Hour Chronicles
 
                     #****************************************#
                     #******** CHECK FOR VALID LOGIN *********#
@@ -56,7 +45,7 @@
 
                         #************ DENY PAGE ACCESS ***********#
 
-                        session_destroy();
+                        unset($_SESSION['ID']);
 
                         #************ FLAG AS LOGGED OUT *********#
 
@@ -74,8 +63,6 @@
                         $loggedIn = true;
 
                     } // CHECK FOR VALID LOGIN END
-
-                } // VALIDATE LOGIN END
 
 #*************************************************************************#
 
@@ -205,55 +192,18 @@
 
                                 debugProcessStart('The user is being logged in...');
 
-                                #************ START SESSION ***************#
+                                #******** SAVE USER DATA INTO SESSION FILE ******#
 
-                                if( session_start() === false ) {
-                                    // error
-                                    debugError('Error starting session!');	
+                                debugProcessStart('Writing user data to session...');
 
-                                    $errorLogin = 'Login is not possible. Please allow cookies in your browser.';
+                                $_SESSION['ID']         = $dbUserArray['userID'];
+                                $_SESSION['firstName']  = $dbUserArray['userFirstName'];
+                                $_SESSION['lastName']   = $dbUserArray['userLastName'];
+                                $_SESSION['IPAddress']  = $_SERVER['REMOTE_ADDR'];
 
-                                    // error message for admin
-									$logErrorForAdmin = 'Error during login process.';
-					
-									#******** WRITE TO ERROR LOG ******#
-							
-									// create file
-							
-									if( file_exists('./logdocs') === false ) {
-										mkdir('./logdocs');
-									}
-							
-									// create error message
-							
-									$logEntry    = "\t<p>";
-									$logEntry   .= date('Y-m-d | h:i:s |');
-									$logEntry   .= 'FILE: <i>' . __FILE__ . '</i> |';
-									$logEntry   .= '<i>' . $logErrorForAdmin . '</i>';
-									$logEntry   .= "</p>\n";
-							
-									// put error message into the error log
-							
-									file_put_contents('./logdocs/error_log.html', $logEntry, FILE_APPEND);
+                                #******** REDIRECT TO DASHBOARD ******#
 
-                                } else {
-                                    // success
-                                    debugSuccess('The session has been started successfully.');
-
-                                    #******** SAVE USER DATA INTO SESSION FILE ******#
-
-                                    debugProcessStart('Writing user data to session...');
-
-                                    $_SESSION['ID']         = $dbUserArray['userID'];
-                                    $_SESSION['firstName']  = $dbUserArray['userFirstName'];
-                                    $_SESSION['lastName']   = $dbUserArray['userLastName'];
-                                    $_SESSION['IPAddress']  = $_SERVER['REMOTE_ADDR'];
-
-                                    #******** REDIRECT TO DASHBOARD ******#
-
-                                    header('LOCATION: dashboard.php');
-
-                                } // 3. PROCESS LOGIN END
+                                header('LOCATION: dashboard.php');
 
                             } // 2. VALIDATE PASSWORD END
 
@@ -338,8 +288,8 @@
                     
                         // Step 4 URL: processing data
                     
-                        // 1. Delete session file
-                        session_destroy();
+                        // 1. Delete session for Witching Hour Chronicles
+                        unset($_SESSION['ID']);
                     
                         // 2. Reload homepage
                         header('LOCATION: index.php');
