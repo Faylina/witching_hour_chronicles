@@ -1276,7 +1276,7 @@
 
                     <!-- Button -->
                     <?php if( $dbError OR $dbSuccess OR $info ): ?>
-                        <a class="button" onclick="document.getElementsByTagName('popupBox')[0].style.display = 'none'">Okay</a>
+                        <a class="button" href="./dashboard.php">Okay</a>
                     <?php elseif( $alert ): ?>
                         <a class="button" href="?action=cancelDelete">Cancel</a>
                         <a class="button" href="?action=delete">Delete Post</a>
